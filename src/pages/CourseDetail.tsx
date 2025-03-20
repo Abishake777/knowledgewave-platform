@@ -109,10 +109,10 @@ const extendedCourseDetails: Record<string, ExtendedCourseDetails> = {
       'Learn professional developer best practices'
     ],
     requirements: [
-      'No programming experience needed - I'll teach you everything you need to know',
+      "No programming experience needed - I'll teach you everything you need to know",
       'A computer with access to the internet',
       'No paid software required',
-      'I'll walk you through, step-by-step how to get all the software installed'
+      "I'll walk you through, step-by-step how to get all the software installed"
     ],
     sections: [
       {
@@ -225,7 +225,7 @@ const extendedCourseDetails: Record<string, ExtendedCourseDetails> = {
   },
   '3': {
     id: '3',
-    description: 'iOS 13 & Swift 5 - The Complete iOS App Development Bootcamp. From beginner to iOS App Developer with just one course. Fully updated for iOS 13 and Xcode 11. This course teaches you how to build beautiful, functional iOS apps and launch them on the App Store. You'll learn Storyboard, Auto Layout, Core Data, ARKit, and more.',
+    description: 'iOS 13 & Swift 5 - The Complete iOS App Development Bootcamp. From beginner to iOS App Developer with just one course. Fully updated for iOS 13 and Xcode 11. This course teaches you how to build beautiful, functional iOS apps and launch them on the App Store. You\'ll learn Storyboard, Auto Layout, Core Data, ARKit, and more.',
     whatYouWillLearn: [
       'Build over 20 iOS apps using Swift 5',
       'Learn to code using Swift 5 and Xcode 11',
@@ -235,7 +235,7 @@ const extendedCourseDetails: Record<string, ExtendedCourseDetails> = {
       'Master Object-Oriented Programming Concepts'
     ],
     requirements: [
-      'No programming experience needed - I\'ll teach you everything you need to know',
+      "No programming experience needed - I'll teach you everything you need to know",
       'A Mac laptop or iMac (macOS 10.14 or higher)',
       'No paid software required - all apps will be created in Xcode 11 (which is free)'
     ],
@@ -287,7 +287,7 @@ const extendedCourseDetails: Record<string, ExtendedCourseDetails> = {
   },
   '4': {
     id: '4',
-    description: 'The Complete Digital Marketing Course - 12 Courses in 1. Master Digital Marketing Strategy, Social Media Marketing, SEO, YouTube, Email, Facebook Marketing, Analytics & More! This comprehensive digital marketing course is designed to take you from beginner to advanced digital marketer within a short time frame. You'll be exposed to all the major digital marketing channels and learn how to optimize them for growth.',
+    description: 'The Complete Digital Marketing Course - 12 Courses in 1. Master Digital Marketing Strategy, Social Media Marketing, SEO, YouTube, Email, Facebook Marketing, Analytics & More! This comprehensive digital marketing course is designed to take you from beginner to advanced digital marketer within a short time frame. You\'ll be exposed to all the major digital marketing channels and learn how to optimize them for growth.',
     whatYouWillLearn: [
       'Grow a business online from scratch',
       'Master SEO, social media marketing, and content marketing',
@@ -339,7 +339,7 @@ const extendedCourseDetails: Record<string, ExtendedCourseDetails> = {
     certificate: true,
     instructorDetails: {
       name: 'Rob Percival',
-      bio: 'Rob Percival is a web developer and teacher with a passion for coding and education. He has taught over 1.5 million students across his various programming and digital marketing courses. Rob's teaching style focuses on practical, project-based learning that helps students build real skills they can apply immediately.',
+      bio: 'Rob Percival is a web developer and teacher with a passion for coding and education. He has taught over 1.5 million students across his various programming and digital marketing courses. Rob\'s teaching style focuses on practical, project-based learning that helps students build real skills they can apply immediately.',
       image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80',
       rating: 4.4,
       reviewCount: 68400,
