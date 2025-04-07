@@ -1,456 +1,206 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, Clock, Calendar, Globe, Award, ChevronDown, ChevronUp, Play } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { CourseProps } from '@/components/CourseCard';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Star, Clock, Globe, CheckCircle, Award, Heart, Share2, Play } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import CourseCard, { CourseProps } from '@/components/CourseCard';
 
-// Sample course data (expanded from catalog)
-const allCourses: CourseProps[] = [
-  {
-    id: '1',
-    title: 'The Complete Web Development Bootcamp',
-    instructor: 'Dr. Angela Yu',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80',
-    price: 94.99,
-    rating: 4.7,
-    reviewCount: 154000,
-    duration: '63 hours',
-    level: 'All Levels',
-    category: 'Development',
-    featured: true,
-  },
-  {
-    id: '2',
-    title: 'Machine Learning A-Z: Hands-On Python & R',
-    instructor: 'Kirill Eremenko',
-    image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    price: 89.99,
-    rating: 4.5,
-    reviewCount: 125000,
-    duration: '44 hours',
-    level: 'Intermediate',
-    category: 'Data Science',
-  },
-  {
-    id: '3',
-    title: 'iOS App Development Bootcamp',
-    instructor: 'Dr. Angela Yu',
-    image: 'https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    price: 94.99,
-    rating: 4.8,
-    reviewCount: 49500,
-    duration: '55 hours',
-    level: 'All Levels',
-    category: 'Development',
-    featured: true,
-  },
-  {
-    id: '4',
-    title: 'The Complete Digital Marketing Course',
-    instructor: 'Rob Percival',
-    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2015&q=80',
-    price: 84.99,
-    rating: 4.4,
-    reviewCount: 23400,
-    duration: '20 hours',
-    level: 'Beginner',
-    category: 'Marketing',
-  },
-];
-
-// Extended course details
-interface ExtendedCourseDetails {
-  id: string;
+interface CourseDetailProps extends CourseProps {
   description: string;
   whatYouWillLearn: string[];
   requirements: string[];
-  sections: {
-    title: string;
-    lectures: number;
-    duration: string;
-    content?: string[];
+  curriculum: {
+    section: string;
+    lectures: {
+      title: string;
+      duration: string;
+      preview?: boolean;
+    }[];
   }[];
   totalLectures: number;
   totalDuration: string;
   lastUpdated: string;
   language: string;
   certificate: boolean;
-  instructorDetails: {
-    name: string;
-    bio: string;
-    image: string;
-    rating: number;
-    reviewCount: number;
-    studentsCount: number;
-    coursesCount: number;
-  };
+  fullLifetimeAccess: boolean;
 }
 
-// Sample extended course data
-const extendedCourseDetails: Record<string, ExtendedCourseDetails> = {
+// Sample data for all courses
+const allCourses: CourseProps[] = [
+  {
+    id: '1',
+    title: 'Complete Web Development Bootcamp',
+    instructor: 'Dr. Angela Yu',
+    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2344&q=80',
+    price: 89.99,
+    rating: 4.7,
+    reviewCount: 43520,
+    duration: '63 hours',
+    level: 'All Levels',
+    category: 'Web Development',
+  },
+  {
+    id: '2',
+    title: 'Machine Learning A-Z: Python & R In Data Science',
+    instructor: 'Kirill Eremenko',
+    image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80',
+    price: 94.99,
+    rating: 4.5,
+    reviewCount: 15230,
+    duration: '44 hours',
+    level: 'Intermediate',
+    category: 'Data Science',
+  },
+  {
+    id: '3',
+    title: 'iOS & Swift - Complete iOS App Development',
+    instructor: 'Dr. Angela Yu',
+    image: 'https://images.unsplash.com/photo-1621839673705-6617adf9e890?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2332&q=80',
+    price: 99.99,
+    rating: 4.8,
+    reviewCount: 8932,
+    duration: '55 hours',
+    level: 'Beginner',
+    category: 'Mobile Development',
+  },
+  {
+    id: '4',
+    title: 'The Complete Digital Marketing Course',
+    instructor: 'Rob Percival',
+    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2426&q=80',
+    price: 84.99,
+    rating: 4.4,
+    reviewCount: 23156,
+    duration: '20 hours',
+    level: 'All Levels',
+    category: 'Marketing',
+  },
+];
+
+// Extended course details
+const extendedCourseDetails: Record<string, CourseDetailProps> = {
   '1': {
     id: '1',
-    description: 'Become a full-stack web developer with just one course. HTML, CSS, Javascript, Node, React, MongoDB, and more! This course is constantly updated with new content, projects, and modules. Think of it as a subscription to a never-ending supply of developer training. This course gives you a competitive edge in the developer job market.',
+    title: 'Complete Web Development Bootcamp',
+    instructor: 'Dr. Angela Yu',
+    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2344&q=80',
+    price: 89.99,
+    rating: 4.7,
+    reviewCount: 43520,
+    duration: '63 hours',
+    level: 'All Levels',
+    category: 'Web Development',
+    description: 'Become a full-stack web developer with just one course. HTML, CSS, Javascript, Node, React, MongoDB, Web3 and DApps. This comprehensive course covers everything from the basics of HTML to advanced topics like blockchain development and Web3 integration.',
     whatYouWillLearn: [
-      'Build 16 web development projects for your portfolio',
-      'Learn the latest technologies, including Javascript, React, Node and more',
+      'Build 16 web development projects for your portfolio, ready to apply for junior developer jobs',
+      'Learn the latest technologies, including Javascript, React, Node and even Web3 development',
       'Build fully-fledged websites and web apps for your startup or business',
       'Master frontend development with React',
       'Master backend development with Node',
-      'Learn professional developer best practices'
+      'Learn professional developer best practices',
     ],
     requirements: [
-      "No programming experience needed - I'll teach you everything you need to know",
+      'No programming experience needed - I'll teach you everything you need to know',
       'A computer with access to the internet',
       'No paid software required',
-      "I'll walk you through, step-by-step how to get all the software installed"
+      'I'll walk you through, step-by-step how to get all the software installed and set up',
     ],
-    sections: [
+    curriculum: [
       {
-        title: 'Introduction to Web Development',
-        lectures: 12,
-        duration: '1.5 hours',
-        content: [
-          'How the Internet Works',
-          'HTML Basics',
-          'CSS Fundamentals',
-          'Your First Web Page'
-        ]
+        section: 'Introduction to HTML',
+        lectures: [
+          { title: 'Introduction to Web Development', duration: '15:32' },
+          { title: 'HTML Basics', duration: '22:10', preview: true },
+          { title: 'HTML Forms and Inputs', duration: '18:45' },
+        ],
       },
       {
-        title: 'JavaScript Basics',
-        lectures: 24,
-        duration: '4 hours',
-        content: [
-          'JavaScript Variables',
-          'Control Flow',
-          'JavaScript Functions',
-          'DOM Manipulation'
-        ]
+        section: 'CSS Fundamentals',
+        lectures: [
+          { title: 'Introduction to CSS', duration: '20:15', preview: true },
+          { title: 'CSS Selectors', duration: '16:40' },
+          { title: 'CSS Box Model', duration: '19:22' },
+          { title: 'CSS Flexbox', duration: '25:18' },
+        ],
       },
       {
-        title: 'React Development',
-        lectures: 36,
-        duration: '8 hours',
-        content: [
-          'React Components',
-          'State Management',
-          'React Hooks',
-          'Building a React App'
-        ]
+        section: 'JavaScript Essentials',
+        lectures: [
+          { title: 'JavaScript Basics', duration: '28:10', preview: true },
+          { title: 'DOM Manipulation', duration: '24:45' },
+          { title: 'Event Handling', duration: '22:33' },
+          { title: 'Asynchronous JavaScript', duration: '35:20' },
+        ],
       },
-      {
-        title: 'Node.js Backend Development',
-        lectures: 28,
-        duration: '6 hours'
-      },
-      {
-        title: 'Database Integration with MongoDB',
-        lectures: 18,
-        duration: '4 hours'
-      },
-      {
-        title: 'Authentication and Security',
-        lectures: 14,
-        duration: '3 hours'
-      },
-      {
-        title: 'Deployment and DevOps',
-        lectures: 10,
-        duration: '2 hours'
-      }
     ],
-    totalLectures: 328,
+    totalLectures: 425,
     totalDuration: '63 hours',
-    lastUpdated: 'September 2023',
+    lastUpdated: 'November 2023',
     language: 'English',
     certificate: true,
-    instructorDetails: {
-      name: 'Dr. Angela Yu',
-      bio: 'Dr. Angela Yu is a developer and lead instructor at the London App Brewery. She has taught over 1 million students how to code through her online courses. With a background in both medicine and programming, she brings a unique perspective to teaching technical skills in an accessible way.',
-      image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1061&q=80',
-      rating: 4.7,
-      reviewCount: 154000,
-      studentsCount: 1000000,
-      coursesCount: 8
-    }
+    fullLifetimeAccess: true,
   },
   '2': {
     id: '2',
-    description: 'Learn to create Machine Learning Algorithms in Python and R from two Data Science experts. Code templates included. This course has been designed by two professional Data Scientists so that we can share our knowledge and help you learn complex theory, algorithms, and coding libraries in a simple way. We will walk you step-by-step into the World of Machine Learning.',
+    title: 'Machine Learning A-Z: Python & R In Data Science',
+    instructor: 'Kirill Eremenko',
+    image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80',
+    price: 94.99,
+    rating: 4.5,
+    reviewCount: 15230,
+    duration: '44 hours',
+    level: 'Intermediate',
+    category: 'Data Science',
+    description: 'Learn to create Machine Learning Algorithms in Python and R from two Data Science experts. Code templates included. This course has been designed by two professional Data Scientists so that we can share our knowledge and help you learn complex theory, algorithms, and coding libraries in a simple way.',
     whatYouWillLearn: [
       'Master Machine Learning on Python & R',
       'Have a great intuition of many Machine Learning models',
-      'Make accurate predictions with regression analysis',
+      'Make accurate predictions',
+      'Make powerful analysis',
       'Make robust Machine Learning models',
-      'Use Machine Learning for personal purpose',
-      'Handle specific topics like Reinforcement Learning, NLP and Deep Learning'
+      'Create strong added value to your business',
     ],
     requirements: [
-      'Just some high school mathematics level',
-      'Basic Python or R knowledge is a plus but not a must',
-      'Willing to learn and practice'
+      'Just some high school mathematics level.',
+      'Basic Python or R knowledge',
     ],
-    sections: [
+    curriculum: [
       {
-        title: 'Data Preprocessing',
-        lectures: 10,
-        duration: '2 hours',
-        content: [
-          'Importing Libraries',
-          'Importing Datasets',
-          'Handling Missing Data',
-          'Feature Scaling'
-        ]
+        section: 'Data Preprocessing',
+        lectures: [
+          { title: 'Importing Libraries', duration: '12:30', preview: true },
+          { title: 'Importing Dataset', duration: '15:20' },
+          { title: 'Handling Missing Data', duration: '18:45' },
+        ],
       },
       {
-        title: 'Regression',
-        lectures: 30,
-        duration: '8 hours',
-        content: [
-          'Simple Linear Regression',
-          'Multiple Linear Regression',
-          'Polynomial Regression',
-          'Support Vector Regression'
-        ]
+        section: 'Regression',
+        lectures: [
+          { title: 'Simple Linear Regression', duration: '25:15', preview: true },
+          { title: 'Multiple Linear Regression', duration: '28:40' },
+          { title: 'Polynomial Regression', duration: '22:22' },
+        ],
       },
       {
-        title: 'Classification',
-        lectures: 28,
-        duration: '7 hours',
-        content: [
-          'Logistic Regression',
-          'K-Nearest Neighbors',
-          'Support Vector Machine',
-          'Decision Trees'
-        ]
+        section: 'Classification',
+        lectures: [
+          { title: 'Logistic Regression', duration: '24:10', preview: true },
+          { title: 'K-Nearest Neighbors', duration: '22:45' },
+          { title: 'Support Vector Machine', duration: '26:33' },
+          { title: 'Kernel SVM', duration: '20:20' },
+        ],
       },
-      {
-        title: 'Clustering',
-        lectures: 12,
-        duration: '3 hours'
-      },
-      {
-        title: 'Association Rule Learning',
-        lectures: 8,
-        duration: '2 hours'
-      },
-      {
-        title: 'Reinforcement Learning',
-        lectures: 10,
-        duration: '3 hours'
-      },
-      {
-        title: 'Natural Language Processing',
-        lectures: 12,
-        duration: '4 hours'
-      },
-      {
-        title: 'Deep Learning',
-        lectures: 20,
-        duration: '6 hours'
-      }
     ],
-    totalLectures: 280,
+    totalLectures: 320,
     totalDuration: '44 hours',
-    lastUpdated: 'August 2023',
-    language: 'English',
-    certificate: true,
-    instructorDetails: {
-      name: 'Kirill Eremenko',
-      bio: 'Kirill Eremenko is a Data Scientist and Forex Systems Expert. He has worked in the financial industry for several years and has a passion for teaching complex technical concepts in an easy-to-understand manner. His courses have helped hundreds of thousands of students master data science and machine learning.',
-      image: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      rating: 4.5,
-      reviewCount: 125000,
-      studentsCount: 800000,
-      coursesCount: 15
-    }
-  },
-  '3': {
-    id: '3',
-    description: 'iOS 13 & Swift 5 - The Complete iOS App Development Bootcamp. From beginner to iOS App Developer with just one course. Fully updated for iOS 13 and Xcode 11. This course teaches you how to build beautiful, functional iOS apps and launch them on the App Store. You\'ll learn Storyboard, Auto Layout, Core Data, ARKit, and more.',
-    whatYouWillLearn: [
-      'Build over 20 iOS apps using Swift 5',
-      'Learn to code using Swift 5 and Xcode 11',
-      'Master creating Augmented Reality apps using Apple\'s ARKit',
-      'Understand UI design and build beautiful user interfaces',
-      'Learn to use Firebase to create fully functional online apps',
-      'Master Object-Oriented Programming Concepts'
-    ],
-    requirements: [
-      "No programming experience needed - I'll teach you everything you need to know",
-      'A Mac laptop or iMac (macOS 10.14 or higher)',
-      'No paid software required - all apps will be created in Xcode 11 (which is free)'
-    ],
-    sections: [
-      {
-        title: 'Getting Started with iOS Development',
-        lectures: 15,
-        duration: '3 hours',
-        content: [
-          'Introduction to Xcode',
-          'Swift Basics',
-          'Building Your First App',
-          'App Design Principles'
-        ]
-      },
-      {
-        title: 'Swift Programming',
-        lectures: 40,
-        duration: '10 hours',
-        content: [
-          'Swift Variables and Constants',
-          'Control Flow',
-          'Swift Functions',
-          'Object-Oriented Programming'
-        ]
-      },
-      {
-        title: 'iOS App Design',
-        lectures: 30,
-        duration: '8 hours',
-        content: [
-          'Auto Layout',
-          'Responsive UIs',
-          'Animation',
-          'Custom Components'
-        ]
-      },
-      {
-        title: 'Networking and APIs',
-        lectures: 25,
-        duration: '6 hours'
-      },
-      {
-        title: 'Data Persistence',
-        lectures: 20,
-        duration: '5 hours'
-      },
-      {
-        title: 'Firebase Integration',
-        lectures: 15,
-        duration: '4 hours'
-      },
-      {
-        title: 'Augmented Reality with ARKit',
-        lectures: 20,
-        duration: '6 hours'
-      },
-      {
-        title: 'Publishing to the App Store',
-        lectures: 10,
-        duration: '2 hours'
-      }
-    ],
-    totalLectures: 350,
-    totalDuration: '55 hours',
     lastUpdated: 'October 2023',
     language: 'English',
     certificate: true,
-    instructorDetails: {
-      name: 'Dr. Angela Yu',
-      bio: 'Dr. Angela Yu is a developer and lead instructor at the London App Brewery. She has taught over 1 million students how to code through her online courses. With a background in both medicine and programming, she brings a unique perspective to teaching technical skills in an accessible way.',
-      image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1061&q=80',
-      rating: 4.8,
-      reviewCount: 49500,
-      studentsCount: 1000000,
-      coursesCount: 8
-    }
+    fullLifetimeAccess: true,
   },
-  '4': {
-    id: '4',
-    description: 'The Complete Digital Marketing Course - 12 Courses in 1. Master Digital Marketing Strategy, Social Media Marketing, SEO, YouTube, Email, Facebook Marketing, Analytics & More! This comprehensive digital marketing course is designed to take you from beginner to advanced digital marketer within a short time frame. You\'ll be exposed to all the major digital marketing channels and learn how to optimize them for growth.',
-    whatYouWillLearn: [
-      'Grow a business online from scratch',
-      'Master SEO, social media marketing, and content marketing',
-      'Create effective Facebook, YouTube and Google Ads campaigns',
-      'Learn email marketing techniques that convert',
-      'Understand web analytics and conversion optimization',
-      'Build a professional marketing strategy'
-    ],
-    requirements: [
-      'No prior knowledge required - enthusiasm and determination to make your business succeed online',
-      'A computer with Internet connection',
-      'No paid software or tools required'
-    ],
-    sections: [
-      {
-        title: 'Introduction to Digital Marketing',
-        lectures: 10,
-        duration: '1 hour',
-        content: [
-          'Digital Marketing Overview',
-          'Building a Marketing Strategy',
-          'Understanding Your Target Audience',
-          'Digital Marketing Channels'
-        ]
-      },
-      {
-        title: 'Content Marketing',
-        lectures: 20,
-        duration: '3 hours',
-        content: [
-          'Content Strategy',
-          'Blogging for Business',
-          'Video Content Creation',
-          'Content Distribution'
-        ]
-      },
-      {
-        title: 'Search Engine Optimization (SEO)',
-        lectures: 30,
-        duration: '4 hours',
-        content: [
-          'On-Page SEO',
-          'Off-Page SEO',
-          'Technical SEO',
-          'Local SEO'
-        ]
-      },
-      {
-        title: 'Social Media Marketing',
-        lectures: 35,
-        duration: '5 hours'
-      },
-      {
-        title: 'Email Marketing',
-        lectures: 20,
-        duration: '2 hours'
-      },
-      {
-        title: 'Google Ads',
-        lectures: 25,
-        duration: '3 hours'
-      },
-      {
-        title: 'Facebook & Instagram Ads',
-        lectures: 25,
-        duration: '3 hours'
-      },
-      {
-        title: 'Analytics and Optimization',
-        lectures: 15,
-        duration: '2 hours'
-      }
-    ],
-    totalLectures: 245,
-    totalDuration: '20 hours',
-    lastUpdated: 'August 2023',
-    language: 'English',
-    certificate: true,
-    instructorDetails: {
-      name: 'Rob Percival',
-      bio: 'Rob Percival is a web developer and teacher with a passion for coding and education. He has taught over 1.5 million students across his various programming and digital marketing courses. Rob\'s teaching style focuses on practical, project-based learning that helps students build real skills they can apply immediately.',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80',
-      rating: 4.4,
-      reviewCount: 68400,
-      studentsCount: 1500000,
-      coursesCount: 25
-    }
-  }
 };
 
 const renderStars = (rating: number) => {
@@ -472,136 +222,120 @@ const renderStars = (rating: number) => {
 const CourseDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [course, setCourse] = useState<CourseProps | null>(null);
-  const [courseDetails, setCourseDetails] = useState<ExtendedCourseDetails | null>(null);
-  const [expandedSections, setExpandedSections] = useState<Record<number, boolean>>({});
-  
+  const [courseDetails, setCourseDetails] = useState<CourseDetailProps | null>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+
   useEffect(() => {
     // Scroll to top on page load
     window.scrollTo(0, 0);
     
-    // Find the course by id
-    if (id) {
-      const foundCourse = allCourses.find(c => c.id === id);
-      const foundDetails = extendedCourseDetails[id];
+    // Find the course by ID
+    const foundCourse = allCourses.find(c => c.id === id);
+    if (foundCourse) {
+      setCourse(foundCourse);
       
-      if (foundCourse) setCourse(foundCourse);
-      if (foundDetails) setCourseDetails(foundDetails);
+      // Get extended details
+      const details = extendedCourseDetails[id || ''];
+      if (details) {
+        setCourseDetails(details);
+      }
     }
   }, [id]);
-  
-  const toggleSection = (index: number) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }));
+
+  const handlePlayVideo = () => {
+    setIsVideoPlaying(true);
+    // In a real app, you would play the video here
   };
-  
+
   if (!course || !courseDetails) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-grow container mx-auto px-4 py-24">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold">Course not found</h1>
-            <p className="mt-4 text-muted-foreground">
-              The course you're looking for doesn't exist or has been removed.
-            </p>
-            <Button asChild className="mt-6">
-              <Link to="/catalog">Browse Courses</Link>
-            </Button>
-          </div>
-        </main>
-        <Footer />
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <p>Loading course details...</p>
       </div>
     );
   }
-  
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
       
-      <main className="flex-grow">
+      <main className="flex-grow pt-20">
         {/* Course Header */}
-        <section className="pt-24 pb-8 bg-primary/5">
+        <section className="bg-secondary py-10">
           <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold mb-4">
-                  {course.title}
-                </h1>
-                <p className="text-lg mb-4">
-                  {courseDetails.description}
-                </p>
+            <div className="flex flex-col lg:flex-row gap-8">
+              <div className="lg:w-7/12">
+                <div className="mb-4">
+                  <span className="text-sm text-primary font-medium">{course.category}</span>
+                </div>
+                <h1 className="text-2xl md:text-3xl font-bold mb-3">{course.title}</h1>
+                <p className="text-lg mb-4">{courseDetails.description}</p>
                 
-                <div className="flex items-center mb-4">
-                  <div className="flex">
-                    {renderStars(course.rating)}
+                <div className="flex flex-wrap items-center gap-4 mb-4">
+                  <div className="flex items-center">
+                    <div className="flex mr-1">
+                      {renderStars(course.rating)}
+                    </div>
+                    <span className="text-sm font-medium">{course.rating}</span>
+                    <span className="text-sm text-muted-foreground ml-1">({course.reviewCount} reviews)</span>
                   </div>
-                  <span className="ml-2 text-sm">
-                    ({course.reviewCount.toLocaleString()} reviews)
-                  </span>
+                  
+                  <div className="flex items-center">
+                    <Clock className="w-4 h-4 mr-1 text-muted-foreground" />
+                    <span className="text-sm">{course.duration}</span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <Award className="w-4 h-4 mr-1 text-muted-foreground" />
+                    <span className="text-sm">{course.level}</span>
+                  </div>
                 </div>
                 
-                <p className="mb-4">
-                  Created by <span className="text-primary">{course.instructor}</span>
+                <p className="text-sm mb-4">
+                  Created by <span className="font-medium">{course.instructor}</span>
                 </p>
                 
-                <div className="flex flex-wrap gap-4 mb-6">
-                  <div className="flex items-center text-sm">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Last updated {courseDetails.lastUpdated}
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <Globe className="w-4 h-4 mr-2" />
-                    {courseDetails.language}
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <Clock className="w-4 h-4 mr-2" />
-                    {courseDetails.totalDuration}
-                  </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button>Enroll Now</Button>
+                  <Button variant="outline" className="flex items-center">
+                    <Heart className="w-4 h-4 mr-2" />
+                    Wishlist
+                  </Button>
+                  <Button variant="outline" className="flex items-center">
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share
+                  </Button>
                 </div>
               </div>
               
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="relative aspect-video">
-                  <img 
-                    src={course.image} 
-                    alt={course.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <div className="bg-white/90 rounded-full p-4 cursor-pointer hover:bg-white transition-colors">
-                      <Play className="w-8 h-8 text-primary" />
+              <div className="lg:w-5/12">
+                <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                  {isVideoPlaying ? (
+                    <div className="w-full h-full">
+                      {/* Video player would go here in a real app */}
+                      <div className="flex items-center justify-center h-full text-white">
+                        Video is playing...
+                      </div>
                     </div>
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="text-3xl font-bold">${course.price.toFixed(2)}</div>
-                  </div>
-                  
-                  <Button className="w-full mb-4" size="lg">
-                    Enroll Now
-                  </Button>
-                  
-                  <Button variant="outline" className="w-full" size="lg">
-                    Add to Wishlist
-                  </Button>
-                  
-                  <div className="mt-6 text-sm">
-                    <p className="mb-2">This course includes:</p>
-                    <ul className="space-y-2">
-                      <li className="flex items-start">
-                        <Clock className="w-4 h-4 mr-2 mt-0.5" />
-                        <span>{courseDetails.totalDuration} on-demand video</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Award className="w-4 h-4 mr-2 mt-0.5" />
-                        <span>Certificate of completion</span>
-                      </li>
-                    </ul>
-                  </div>
+                  ) : (
+                    <>
+                      <img 
+                        src={course.image} 
+                        alt={course.title} 
+                        className="w-full h-full object-cover opacity-80"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30"
+                          onClick={handlePlayVideo}
+                        >
+                          <Play className="w-8 h-8 text-white" fill="white" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -609,122 +343,243 @@ const CourseDetail = () => {
         </section>
         
         {/* Course Content */}
-        <section className="py-12">
+        <section className="py-10">
           <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="md:col-span-2">
-                {/* What You'll Learn */}
-                <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
-                  <h2 className="text-xl font-bold mb-4">What You'll Learn</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {courseDetails.whatYouWillLearn.map((item, index) => (
-                      <div key={index} className="flex items-start">
-                        <Check className="w-5 h-5 mr-2 text-primary flex-shrink-0" />
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Course Content */}
-                <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
-                  <h2 className="text-xl font-bold mb-4">Course Content</h2>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-sm text-muted-foreground">
-                      {courseDetails.sections.length} sections • {courseDetails.totalLectures} lectures • {courseDetails.totalDuration} total length
-                    </div>
-                  </div>
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Main Course Content */}
+              <div className="lg:w-8/12">
+                <Tabs defaultValue="overview" className="mb-8">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
+                    <TabsTrigger value="instructor">Instructor</TabsTrigger>
+                    <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                  </TabsList>
                   
-                  <div className="space-y-3">
-                    {courseDetails.sections.map((section, index) => (
-                      <div key={index} className="border rounded-md overflow-hidden">
-                        <div 
-                          className="flex items-center justify-between p-4 cursor-pointer bg-secondary/50 hover:bg-secondary/70"
-                          onClick={() => toggleSection(index)}
-                        >
-                          <div className="font-medium flex items-center">
-                            {expandedSections[index] ? (
-                              <ChevronUp className="w-5 h-5 mr-2" />
-                            ) : (
-                              <ChevronDown className="w-5 h-5 mr-2" />
-                            )}
-                            {section.title}
+                  <TabsContent value="overview">
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-xl font-semibold mb-4">What you'll learn</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {courseDetails.whatYouWillLearn.map((item, index) => (
+                            <div key={index} className="flex">
+                              <CheckCircle className="w-5 h-5 text-primary mr-3 flex-shrink-0" />
+                              <span>{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-xl font-semibold mb-4">Requirements</h3>
+                        <ul className="list-disc pl-5 space-y-2">
+                          {courseDetails.requirements.map((req, index) => (
+                            <li key={index}>{req}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-xl font-semibold mb-4">Related Courses</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {allCourses
+                            .filter(c => c.id !== id && c.category === course.category)
+                            .slice(0, 2)
+                            .map(relatedCourse => (
+                              <CourseCard 
+                                key={relatedCourse.id} 
+                                {...relatedCourse} 
+                              />
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="curriculum">
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-semibold">Course Content</h3>
+                        <div className="text-sm text-muted-foreground">
+                          {courseDetails.totalLectures} lectures • {courseDetails.totalDuration}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {courseDetails.curriculum.map((section, index) => (
+                          <div key={index} className="border rounded-lg overflow-hidden">
+                            <div className="bg-secondary/50 p-4 font-medium">
+                              {section.section}
+                            </div>
+                            <div className="divide-y">
+                              {section.lectures.map((lecture, lectureIndex) => (
+                                <div key={lectureIndex} className="p-4 flex justify-between items-center">
+                                  <div className="flex items-center">
+                                    <Play className="w-4 h-4 mr-3 text-muted-foreground" />
+                                    <span>{lecture.title}</span>
+                                    {lecture.preview && (
+                                      <span className="ml-3 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                                        Preview
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-sm text-muted-foreground">{lecture.duration}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {section.lectures} lectures • {section.duration}
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="instructor">
+                    <div className="space-y-6">
+                      <div className="flex items-start gap-4">
+                        <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
+                          {/* Placeholder for instructor image */}
+                          <span className="text-2xl font-bold">{course.instructor.charAt(0)}</span>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-semibold mb-1">{course.instructor}</h3>
+                          <p className="text-muted-foreground mb-3">Professional Web Developer & Instructor</p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                            <div className="flex items-center">
+                              <Star className="w-4 h-4 mr-1 text-yellow-400 fill-yellow-400" />
+                              <span>4.7 Instructor Rating</span>
+                            </div>
+                            <div>
+                              <span>120,000+ Students</span>
+                            </div>
+                            <div>
+                              <span>15 Courses</span>
+                            </div>
                           </div>
                         </div>
-                        
-                        {expandedSections[index] && section.content && (
-                          <div className="p-4 bg-white border-t">
-                            <ul className="space-y-3">
-                              {section.content.map((lecture, lectureIndex) => (
-                                <li key={lectureIndex} className="flex items-center">
-                                  <Play className="w-4 h-4 mr-3 text-muted-foreground" />
-                                  <span>{lecture}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
                       </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Requirements */}
-                <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
-                  <h2 className="text-xl font-bold mb-4">Requirements</h2>
-                  <ul className="space-y-2">
-                    {courseDetails.requirements.map((req, index) => (
-                      <li key={index} className="flex items-start">
-                        <div className="w-1.5 h-1.5 rounded-full bg-foreground mt-2 mr-3" />
-                        <span>{req}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                      
+                      <div>
+                        <h4 className="font-medium mb-2">About the instructor</h4>
+                        <p className="text-muted-foreground">
+                          I'm Angela, I'm a developer with a passion for teaching. I'm the lead instructor at the London App Brewery, London's leading Programming Bootcamp. I've helped hundreds of thousands of students learn to code and change their lives by becoming a developer. I've been invited by companies such as Twitter, Facebook and Google to teach their employees.
+                        </p>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="reviews">
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <div className="text-center">
+                          <div className="text-5xl font-bold">{course.rating}</div>
+                          <div className="flex justify-center my-1">
+                            {renderStars(course.rating)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">Course Rating</div>
+                        </div>
+                        
+                        <div className="flex-1">
+                          {/* Rating bars would go here */}
+                          <div className="space-y-2">
+                            {[5, 4, 3, 2, 1].map(num => (
+                              <div key={num} className="flex items-center gap-2">
+                                <div className="w-12 text-sm text-right">{num} stars</div>
+                                <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-primary rounded-full" 
+                                    style={{ 
+                                      width: `${num === 5 ? 70 : num === 4 ? 20 : num === 3 ? 7 : num === 2 ? 2 : 1}%` 
+                                    }} 
+                                  />
+                                </div>
+                                <div className="w-12 text-sm">
+                                  {num === 5 ? '70%' : num === 4 ? '20%' : num === 3 ? '7%' : num === 2 ? '2%' : '1%'}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-xl font-semibold mb-4">Student Reviews</h3>
+                        {/* Sample reviews would go here */}
+                        <div className="space-y-6">
+                          {[1, 2, 3].map(i => (
+                            <div key={i} className="border-b pb-6">
+                              <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                                  <span className="font-medium">S</span>
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex justify-between">
+                                    <h4 className="font-medium">Student {i}</h4>
+                                    <span className="text-sm text-muted-foreground">2 weeks ago</span>
+                                  </div>
+                                  <div className="flex my-1">
+                                    {renderStars(5)}
+                                  </div>
+                                  <p className="text-muted-foreground">
+                                    This course was exactly what I needed to jumpstart my career in web development. The instructor explains complex concepts in an easy-to-understand way, and the projects are both challenging and rewarding.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
               
-              {/* Instructor */}
-              <div>
-                <div className="bg-white p-6 rounded-lg shadow-sm sticky top-24">
-                  <h2 className="text-xl font-bold mb-4">Instructor</h2>
-                  <div className="flex items-center mb-4">
-                    <img 
-                      src={courseDetails.instructorDetails.image} 
-                      alt={courseDetails.instructorDetails.name}
-                      className="w-16 h-16 rounded-full object-cover mr-4"
-                    />
-                    <div>
-                      <h3 className="font-semibold text-lg">
-                        {courseDetails.instructorDetails.name}
-                      </h3>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 mr-1" />
-                        {courseDetails.instructorDetails.rating} Instructor Rating
+              {/* Sidebar */}
+              <div className="lg:w-4/12">
+                <div className="sticky top-24">
+                  <div className="bg-white shadow-lg rounded-lg overflow-hidden animate-scale-in">
+                    <div className="p-6">
+                      <div className="flex justify-between items-center mb-6">
+                        <div className="text-3xl font-bold">${course.price.toFixed(2)}</div>
+                        <div className="text-sm text-muted-foreground line-through">
+                          ${(course.price * 1.7).toFixed(2)}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4 mb-6">
+                        <Button className="w-full">Enroll Now</Button>
+                        <Button variant="outline" className="w-full">Add to Wishlist</Button>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <h4 className="font-medium">This course includes:</h4>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-start">
+                            <Globe className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
+                            <span>{courseDetails.totalDuration} on-demand video</span>
+                          </div>
+                          <div className="flex items-start">
+                            <CheckCircle className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
+                            <span>{courseDetails.totalLectures} lectures</span>
+                          </div>
+                          <div className="flex items-start">
+                            <Globe className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
+                            <span>Access on mobile and TV</span>
+                          </div>
+                          <div className="flex items-start">
+                            <Award className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
+                            <span>Certificate of completion</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6 pt-6 border-t">
+                        <div className="text-center">
+                          <p className="text-sm mb-2">Not sure? All courses have a 30-day money-back guarantee</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-                    <div>
-                      <div className="font-medium">{courseDetails.instructorDetails.reviewCount.toLocaleString()}</div>
-                      <div className="text-muted-foreground">Reviews</div>
-                    </div>
-                    <div>
-                      <div className="font-medium">{courseDetails.instructorDetails.studentsCount.toLocaleString()}</div>
-                      <div className="text-muted-foreground">Students</div>
-                    </div>
-                    <div>
-                      <div className="font-medium">{courseDetails.instructorDetails.coursesCount}</div>
-                      <div className="text-muted-foreground">Courses</div>
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm mb-4">
-                    {courseDetails.instructorDetails.bio}
-                  </p>
                 </div>
               </div>
             </div>
