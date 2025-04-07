@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -103,10 +104,10 @@ const extendedCourseDetails: Record<string, CourseDetailProps> = {
       'Learn professional developer best practices',
     ],
     requirements: [
-      'No programming experience needed - I'll teach you everything you need to know',
+      "No programming experience needed - I'll teach you everything you need to know",
       'A computer with access to the internet',
       'No paid software required',
-      'I'll walk you through, step-by-step how to get all the software installed and set up',
+      "I'll walk you through, step-by-step how to get all the software installed and set up",
     ],
     curriculum: [
       {
