@@ -1,63 +1,62 @@
-
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Star, Clock, Globe, CheckCircle, Heart, Share2, Award, ShoppingCart, Play, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { Star, Clock, Calendar, Globe, Award, ChevronDown, ChevronUp, Play } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import CourseContent from '@/components/CourseContent';
-import CourseCard, { CourseProps } from '@/components/CourseCard';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CourseProps } from '@/components/CourseCard';
 
 // Sample course data (expanded from catalog)
 const allCourses: CourseProps[] = [
   {
     id: '1',
-    title: 'Complete Web Development Bootcamp 2023',
+    title: 'The Complete Web Development Bootcamp',
     instructor: 'Dr. Angela Yu',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2344&q=80',
-    price: 89.99,
+    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80',
+    price: 94.99,
     rating: 4.7,
-    reviewCount: 43520,
+    reviewCount: 154000,
     duration: '63 hours',
     level: 'All Levels',
-    category: 'Web Development',
+    category: 'Development',
+    featured: true,
   },
   {
     id: '2',
-    title: 'Machine Learning A-Z: Hands-On Python & R In Data Science',
-    instructor: 'Kirill Eremenko, Hadelin de Ponteves',
-    image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80',
-    price: 94.99,
+    title: 'Machine Learning A-Z: Hands-On Python & R',
+    instructor: 'Kirill Eremenko',
+    image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    price: 89.99,
     rating: 4.5,
-    reviewCount: 15230,
+    reviewCount: 125000,
     duration: '44 hours',
     level: 'Intermediate',
     category: 'Data Science',
   },
   {
     id: '3',
-    title: 'iOS & Swift - The Complete iOS App Development Bootcamp',
+    title: 'iOS App Development Bootcamp',
     instructor: 'Dr. Angela Yu',
-    image: 'https://images.unsplash.com/photo-1621839673705-6617adf9e890?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2332&q=80',
-    price: 99.99,
+    image: 'https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    price: 94.99,
     rating: 4.8,
-    reviewCount: 8932,
+    reviewCount: 49500,
     duration: '55 hours',
-    level: 'Beginner',
-    category: 'Mobile Development',
+    level: 'All Levels',
+    category: 'Development',
+    featured: true,
   },
   {
     id: '4',
-    title: 'The Complete Digital Marketing Course - 12 Courses in 1',
-    instructor: 'Rob Percival, Daragh Walsh',
-    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2426&q=80',
+    title: 'The Complete Digital Marketing Course',
+    instructor: 'Rob Percival',
+    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2015&q=80',
     price: 84.99,
     rating: 4.4,
-    reviewCount: 23156,
+    reviewCount: 23400,
     duration: '20 hours',
-    level: 'All Levels',
+    level: 'Beginner',
     category: 'Marketing',
   },
 ];
@@ -69,15 +68,10 @@ interface ExtendedCourseDetails {
   whatYouWillLearn: string[];
   requirements: string[];
   sections: {
-    id: string;
     title: string;
-    lectures: {
-      id: string;
-      title: string;
-      duration: string;
-      type: 'video' | 'document' | 'quiz';
-      isPreview?: boolean;
-    }[];
+    lectures: number;
+    duration: string;
+    content?: string[];
   }[];
   totalLectures: number;
   totalDuration: string;
@@ -116,34 +110,57 @@ const extendedCourseDetails: Record<string, ExtendedCourseDetails> = {
     ],
     sections: [
       {
-        id: 's1',
         title: 'Introduction to Web Development',
-        lectures: [
-          { id: 'l1', title: 'Course Introduction', duration: '8:12', type: 'video', isPreview: true },
-          { id: 'l2', title: 'How the Internet Works', duration: '12:43', type: 'video', isPreview: true },
-          { id: 'l3', title: 'Setting Up Your Development Environment', duration: '15:20', type: 'video' },
-          { id: 'l4', title: 'Introduction Quiz', duration: '10:00', type: 'quiz' }
+        lectures: 12,
+        duration: '1.5 hours',
+        content: [
+          'How the Internet Works',
+          'HTML Basics',
+          'CSS Fundamentals',
+          'Your First Web Page'
         ]
       },
       {
-        id: 's2',
-        title: 'HTML Foundations',
-        lectures: [
-          { id: 'l5', title: 'HTML Basics', duration: '18:30', type: 'video' },
-          { id: 'l6', title: 'HTML Elements and Attributes', duration: '22:15', type: 'video' },
-          { id: 'l7', title: 'Creating Your First HTML Page', duration: '25:10', type: 'video', isPreview: true },
-          { id: 'l8', title: 'HTML Project Files', duration: '5:00', type: 'document' }
+        title: 'JavaScript Basics',
+        lectures: 24,
+        duration: '4 hours',
+        content: [
+          'JavaScript Variables',
+          'Control Flow',
+          'JavaScript Functions',
+          'DOM Manipulation'
         ]
       },
       {
-        id: 's3',
-        title: 'CSS Fundamentals',
-        lectures: [
-          { id: 'l9', title: 'CSS Basics', duration: '20:45', type: 'video' },
-          { id: 'l10', title: 'CSS Selectors', duration: '19:30', type: 'video' },
-          { id: 'l11', title: 'CSS Box Model', duration: '24:00', type: 'video' },
-          { id: 'l12', title: 'CSS Layouts', duration: '28:15', type: 'video' }
+        title: 'React Development',
+        lectures: 36,
+        duration: '8 hours',
+        content: [
+          'React Components',
+          'State Management',
+          'React Hooks',
+          'Building a React App'
         ]
+      },
+      {
+        title: 'Node.js Backend Development',
+        lectures: 28,
+        duration: '6 hours'
+      },
+      {
+        title: 'Database Integration with MongoDB',
+        lectures: 18,
+        duration: '4 hours'
+      },
+      {
+        title: 'Authentication and Security',
+        lectures: 14,
+        duration: '3 hours'
+      },
+      {
+        title: 'Deployment and DevOps',
+        lectures: 10,
+        duration: '2 hours'
       }
     ],
     totalLectures: 328,
@@ -153,73 +170,102 @@ const extendedCourseDetails: Record<string, ExtendedCourseDetails> = {
     certificate: true,
     instructorDetails: {
       name: 'Dr. Angela Yu',
-      bio: 'Dr. Angela Yu is a developer and lead instructor at the London App Brewery. She teaches iOS, Flutter, and Web Development courses to students worldwide, having taught over 1 million students across her various courses. Her teaching style is focused on creating engaging and practical content that helps students build real-world projects.',
-      image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80',
+      bio: 'Dr. Angela Yu is a developer and lead instructor at the London App Brewery. She has taught over 1 million students how to code through her online courses. With a background in both medicine and programming, she brings a unique perspective to teaching technical skills in an accessible way.',
+      image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1061&q=80',
       rating: 4.7,
-      reviewCount: 98500,
-      studentsCount: 1200000,
-      coursesCount: 12
+      reviewCount: 154000,
+      studentsCount: 1000000,
+      coursesCount: 8
     }
   },
   '2': {
     id: '2',
-    description: 'Learn to create Machine Learning Algorithms in Python and R from two Data Science experts. Code templates included. This course teaches you all the steps of creating a Machine Learning model, from data preparation to performance evaluation. You will learn how to create powerful Machine Learning models, how to choose the best model for each type of problem, and how to evaluate its performance.',
+    description: 'Learn to create Machine Learning Algorithms in Python and R from two Data Science experts. Code templates included. This course has been designed by two professional Data Scientists so that we can share our knowledge and help you learn complex theory, algorithms, and coding libraries in a simple way. We will walk you step-by-step into the World of Machine Learning.',
     whatYouWillLearn: [
       'Master Machine Learning on Python & R',
       'Have a great intuition of many Machine Learning models',
-      'Make accurate predictions',
-      'Make powerful analysis',
+      'Make accurate predictions with regression analysis',
       'Make robust Machine Learning models',
-      'Create strong added value to your business'
+      'Use Machine Learning for personal purpose',
+      'Handle specific topics like Reinforcement Learning, NLP and Deep Learning'
     ],
     requirements: [
-      'Just some high school mathematics level.',
-      'Basic Python or R programming knowledge is a plus but not required.',
-      'A desire to learn and a passion for Data Science!'
+      'Just some high school mathematics level',
+      'Basic Python or R knowledge is a plus but not a must',
+      'Willing to learn and practice'
     ],
     sections: [
       {
-        id: 's1',
-        title: 'Welcome to the Course',
-        lectures: [
-          { id: 'l1', title: 'Course Introduction', duration: '5:32', type: 'video', isPreview: true },
-          { id: 'l2', title: 'What is Machine Learning?', duration: '10:23', type: 'video', isPreview: true },
-          { id: 'l3', title: 'Python vs R for Machine Learning', duration: '8:45', type: 'video' }
-        ]
-      },
-      {
-        id: 's2',
         title: 'Data Preprocessing',
-        lectures: [
-          { id: 'l4', title: 'Importing Libraries', duration: '6:30', type: 'video' },
-          { id: 'l5', title: 'Importing Datasets', duration: '12:15', type: 'video' },
-          { id: 'l6', title: 'Handling Missing Data', duration: '15:10', type: 'video' },
-          { id: 'l7', title: 'Preprocessing Quiz', duration: '10:00', type: 'quiz' }
+        lectures: 10,
+        duration: '2 hours',
+        content: [
+          'Importing Libraries',
+          'Importing Datasets',
+          'Handling Missing Data',
+          'Feature Scaling'
         ]
       },
       {
-        id: 's3',
         title: 'Regression',
-        lectures: [
-          { id: 'l8', title: 'Simple Linear Regression', duration: '28:45', type: 'video' },
-          { id: 'l9', title: 'Multiple Linear Regression', duration: '32:30', type: 'video' },
-          { id: 'l10', title: 'Polynomial Regression', duration: '25:00', type: 'video' },
-          { id: 'l11', title: 'Regression Project Files', duration: '5:00', type: 'document' }
+        lectures: 30,
+        duration: '8 hours',
+        content: [
+          'Simple Linear Regression',
+          'Multiple Linear Regression',
+          'Polynomial Regression',
+          'Support Vector Regression'
         ]
+      },
+      {
+        title: 'Classification',
+        lectures: 28,
+        duration: '7 hours',
+        content: [
+          'Logistic Regression',
+          'K-Nearest Neighbors',
+          'Support Vector Machine',
+          'Decision Trees'
+        ]
+      },
+      {
+        title: 'Clustering',
+        lectures: 12,
+        duration: '3 hours'
+      },
+      {
+        title: 'Association Rule Learning',
+        lectures: 8,
+        duration: '2 hours'
+      },
+      {
+        title: 'Reinforcement Learning',
+        lectures: 10,
+        duration: '3 hours'
+      },
+      {
+        title: 'Natural Language Processing',
+        lectures: 12,
+        duration: '4 hours'
+      },
+      {
+        title: 'Deep Learning',
+        lectures: 20,
+        duration: '6 hours'
       }
     ],
-    totalLectures: 294,
+    totalLectures: 280,
     totalDuration: '44 hours',
-    lastUpdated: 'July 2023',
+    lastUpdated: 'August 2023',
     language: 'English',
     certificate: true,
     instructorDetails: {
       name: 'Kirill Eremenko',
-      bio: 'Kirill Eremenko is a Data Scientist and Forex Systems Expert who has been teaching Data Science and programming for several years. He focuses on making complex topics accessible through practical, hands-on learning and real-world examples.',
-      image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80',
+      bio: 'Kirill Eremenko is a Data Scientist and Forex Systems Expert. He has worked in the financial industry for several years and has a passion for teaching complex technical concepts in an easy-to-understand manner. His courses have helped hundreds of thousands of students master data science and machine learning.',
+      image: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
       rating: 4.5,
-      reviewCount: 76300,
-      studentsCount: 850000,
+      reviewCount: 125000,
+      studentsCount: 800000,
       coursesCount: 15
     }
   },
@@ -241,33 +287,62 @@ const extendedCourseDetails: Record<string, ExtendedCourseDetails> = {
     ],
     sections: [
       {
-        id: 's1',
         title: 'Getting Started with iOS Development',
-        lectures: [
-          { id: 'l1', title: 'Introduction to the Course', duration: '5:22', type: 'video', isPreview: true },
-          { id: 'l2', title: 'The iOS App Development Ecosystem', duration: '10:15', type: 'video', isPreview: true },
-          { id: 'l3', title: 'Setting Up Xcode', duration: '12:40', type: 'video' }
+        lectures: 15,
+        duration: '3 hours',
+        content: [
+          'Introduction to Xcode',
+          'Swift Basics',
+          'Building Your First App',
+          'App Design Principles'
         ]
       },
       {
-        id: 's2',
-        title: 'Swift Programming Basics',
-        lectures: [
-          { id: 'l4', title: 'Variables and Constants', duration: '18:30', type: 'video' },
-          { id: 'l5', title: 'Basic Data Types', duration: '16:15', type: 'video' },
-          { id: 'l6', title: 'Control Flow', duration: '20:10', type: 'video' },
-          { id: 'l7', title: 'Functions and Methods', duration: '22:45', type: 'video' }
+        title: 'Swift Programming',
+        lectures: 40,
+        duration: '10 hours',
+        content: [
+          'Swift Variables and Constants',
+          'Control Flow',
+          'Swift Functions',
+          'Object-Oriented Programming'
         ]
       },
       {
-        id: 's3',
-        title: 'Building Your First iOS App',
-        lectures: [
-          { id: 'l8', title: 'Introduction to UIKit', duration: '15:30', type: 'video' },
-          { id: 'l9', title: 'Creating a New Project', duration: '8:45', type: 'video', isPreview: true },
-          { id: 'l10', title: 'Building a User Interface with Storyboard', duration: '28:20', type: 'video' },
-          { id: 'l11', title: 'Connecting UI Elements to Code', duration: '24:50', type: 'video' }
+        title: 'iOS App Design',
+        lectures: 30,
+        duration: '8 hours',
+        content: [
+          'Auto Layout',
+          'Responsive UIs',
+          'Animation',
+          'Custom Components'
         ]
+      },
+      {
+        title: 'Networking and APIs',
+        lectures: 25,
+        duration: '6 hours'
+      },
+      {
+        title: 'Data Persistence',
+        lectures: 20,
+        duration: '5 hours'
+      },
+      {
+        title: 'Firebase Integration',
+        lectures: 15,
+        duration: '4 hours'
+      },
+      {
+        title: 'Augmented Reality with ARKit',
+        lectures: 20,
+        duration: '6 hours'
+      },
+      {
+        title: 'Publishing to the App Store',
+        lectures: 10,
+        duration: '2 hours'
       }
     ],
     totalLectures: 350,
@@ -277,12 +352,12 @@ const extendedCourseDetails: Record<string, ExtendedCourseDetails> = {
     certificate: true,
     instructorDetails: {
       name: 'Dr. Angela Yu',
-      bio: 'Dr. Angela Yu is a developer and lead instructor at the London App Brewery. She teaches iOS, Flutter, and Web Development courses to students worldwide, having taught over 1 million students across her various courses. Her teaching style is focused on creating engaging and practical content that helps students build real-world projects.',
-      image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80',
+      bio: 'Dr. Angela Yu is a developer and lead instructor at the London App Brewery. She has taught over 1 million students how to code through her online courses. With a background in both medicine and programming, she brings a unique perspective to teaching technical skills in an accessible way.',
+      image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1061&q=80',
       rating: 4.8,
-      reviewCount: 98500,
-      studentsCount: 1200000,
-      coursesCount: 12
+      reviewCount: 49500,
+      studentsCount: 1000000,
+      coursesCount: 8
     }
   },
   '4': {
@@ -291,45 +366,74 @@ const extendedCourseDetails: Record<string, ExtendedCourseDetails> = {
     whatYouWillLearn: [
       'Grow a business online from scratch',
       'Master SEO, social media marketing, and content marketing',
-      'Learn Facebook Ads, Google Ads, YouTube marketing, and more',
-      'Understand market research, branding, and PR strategies',
-      'Create a professional website that converts visitors into customers',
-      'Analyze and optimize your digital marketing campaigns'
+      'Create effective Facebook, YouTube and Google Ads campaigns',
+      'Learn email marketing techniques that convert',
+      'Understand web analytics and conversion optimization',
+      'Build a professional marketing strategy'
     ],
     requirements: [
-      'No prior knowledge required - we teach you everything from scratch',
-      'A computer with an internet connection',
-      'A desire to learn and implement digital marketing strategies'
+      'No prior knowledge required - enthusiasm and determination to make your business succeed online',
+      'A computer with Internet connection',
+      'No paid software or tools required'
     ],
     sections: [
       {
-        id: 's1',
         title: 'Introduction to Digital Marketing',
-        lectures: [
-          { id: 'l1', title: 'Course Overview', duration: '8:10', type: 'video', isPreview: true },
-          { id: 'l2', title: 'The Digital Marketing Landscape', duration: '12:35', type: 'video', isPreview: true },
-          { id: 'l3', title: 'Creating a Digital Marketing Strategy', duration: '18:20', type: 'video' }
+        lectures: 10,
+        duration: '1 hour',
+        content: [
+          'Digital Marketing Overview',
+          'Building a Marketing Strategy',
+          'Understanding Your Target Audience',
+          'Digital Marketing Channels'
         ]
       },
       {
-        id: 's2',
+        title: 'Content Marketing',
+        lectures: 20,
+        duration: '3 hours',
+        content: [
+          'Content Strategy',
+          'Blogging for Business',
+          'Video Content Creation',
+          'Content Distribution'
+        ]
+      },
+      {
         title: 'Search Engine Optimization (SEO)',
-        lectures: [
-          { id: 'l4', title: 'Introduction to SEO', duration: '10:30', type: 'video' },
-          { id: 'l5', title: 'Keyword Research', duration: '25:15', type: 'video' },
-          { id: 'l6', title: 'On-Page SEO Techniques', duration: '22:40', type: 'video' },
-          { id: 'l7', title: 'Off-Page SEO Strategies', duration: '18:55', type: 'video' }
+        lectures: 30,
+        duration: '4 hours',
+        content: [
+          'On-Page SEO',
+          'Off-Page SEO',
+          'Technical SEO',
+          'Local SEO'
         ]
       },
       {
-        id: 's3',
         title: 'Social Media Marketing',
-        lectures: [
-          { id: 'l8', title: 'Social Media Strategy Overview', duration: '15:20', type: 'video' },
-          { id: 'l9', title: 'Facebook Marketing', duration: '28:45', type: 'video' },
-          { id: 'l10', title: 'Instagram Marketing', duration: '24:30', type: 'video' },
-          { id: 'l11', title: 'Twitter and LinkedIn Strategies', duration: '20:15', type: 'video' }
-        ]
+        lectures: 35,
+        duration: '5 hours'
+      },
+      {
+        title: 'Email Marketing',
+        lectures: 20,
+        duration: '2 hours'
+      },
+      {
+        title: 'Google Ads',
+        lectures: 25,
+        duration: '3 hours'
+      },
+      {
+        title: 'Facebook & Instagram Ads',
+        lectures: 25,
+        duration: '3 hours'
+      },
+      {
+        title: 'Analytics and Optimization',
+        lectures: 15,
+        duration: '2 hours'
       }
     ],
     totalLectures: 245,
@@ -359,384 +463,268 @@ const renderStars = (rating: number) => {
           'w-4 h-4',
           i < Math.floor(rating) 
             ? 'text-yellow-400 fill-yellow-400' 
-            : i < rating 
-              ? 'text-yellow-400 fill-yellow-400 opacity-50' 
-              : 'text-gray-300'
+            : 'text-gray-300'
         )}
       />
     ));
 };
 
 const CourseDetail = () => {
-  const { id = '1' } = useParams();
+  const { id } = useParams<{ id: string }>();
   const [course, setCourse] = useState<CourseProps | null>(null);
   const [courseDetails, setCourseDetails] = useState<ExtendedCourseDetails | null>(null);
-  const [relatedCourses, setRelatedCourses] = useState<CourseProps[]>([]);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-
+  const [expandedSections, setExpandedSections] = useState<Record<number, boolean>>({});
+  
   useEffect(() => {
     // Scroll to top on page load
     window.scrollTo(0, 0);
     
-    // Find the course by ID
-    const foundCourse = allCourses.find(c => c.id === id);
-    if (foundCourse) {
-      setCourse(foundCourse);
+    // Find the course by id
+    if (id) {
+      const foundCourse = allCourses.find(c => c.id === id);
+      const foundDetails = extendedCourseDetails[id];
       
-      // Get additional course details
-      const details = extendedCourseDetails[id];
-      if (details) {
-        setCourseDetails(details);
-      }
-      
-      // Find related courses (same category but excluding current course)
-      const related = allCourses
-        .filter(c => c.category === foundCourse.category && c.id !== id)
-        .slice(0, 3);
-      setRelatedCourses(related);
+      if (foundCourse) setCourse(foundCourse);
+      if (foundDetails) setCourseDetails(foundDetails);
     }
   }, [id]);
-
-  const handlePlayVideo = () => {
-    setIsVideoPlaying(true);
-    // In a real application, this would launch a video player
-    setTimeout(() => {
-      setIsVideoPlaying(false);
-    }, 1000);
+  
+  const toggleSection = (index: number) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
   };
-
+  
   if (!course || !courseDetails) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
-        <p>Loading course details...</p>
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="flex-grow container mx-auto px-4 py-24">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold">Course not found</h1>
+            <p className="mt-4 text-muted-foreground">
+              The course you're looking for doesn't exist or has been removed.
+            </p>
+            <Button asChild className="mt-6">
+              <Link to="/catalog">Browse Courses</Link>
+            </Button>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
-
+  
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
       
-      <main className="flex-grow pt-20">
+      <main className="flex-grow">
         {/* Course Header */}
-        <section className="bg-secondary/50 py-12">
+        <section className="pt-24 pb-8 bg-primary/5">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl">
-              <div className="flex items-center space-x-2 mb-2">
-                <span className="text-sm text-primary font-medium">
-                  {course.category}
-                </span>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-sm text-muted-foreground">
-                  {course.level}
-                </span>
-              </div>
-              
-              <h1 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in">
-                {course.title}
-              </h1>
-              
-              <p className="text-lg text-muted-foreground mb-4 animate-slide-up">
-                {courseDetails.description.split('.')[0] + '.'}
-              </p>
-              
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4">
-                <div className="flex items-center">
-                  {renderStars(course.rating)}
-                  <span className="ml-2 text-sm font-medium">
-                    {course.rating.toFixed(1)}
-                  </span>
-                  <span className="ml-1 text-sm text-muted-foreground">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold mb-4">
+                  {course.title}
+                </h1>
+                <p className="text-lg mb-4">
+                  {courseDetails.description}
+                </p>
+                
+                <div className="flex items-center mb-4">
+                  <div className="flex">
+                    {renderStars(course.rating)}
+                  </div>
+                  <span className="ml-2 text-sm">
                     ({course.reviewCount.toLocaleString()} reviews)
                   </span>
                 </div>
                 
-                <div className="flex items-center">
-                  <Clock className="w-4 h-4 mr-1 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {course.duration} total length
-                  </span>
-                </div>
+                <p className="mb-4">
+                  Created by <span className="text-primary">{course.instructor}</span>
+                </p>
                 
-                <div className="flex items-center">
-                  <Globe className="w-4 h-4 mr-1 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {courseDetails.language}
-                  </span>
-                </div>
-                
-                <div className="flex items-center">
-                  <AlertCircle className="w-4 h-4 mr-1 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
+                <div className="flex flex-wrap gap-4 mb-6">
+                  <div className="flex items-center text-sm">
+                    <Calendar className="w-4 h-4 mr-2" />
                     Last updated {courseDetails.lastUpdated}
-                  </span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <Globe className="w-4 h-4 mr-2" />
+                    {courseDetails.language}
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <Clock className="w-4 h-4 mr-2" />
+                    {courseDetails.totalDuration}
+                  </div>
                 </div>
               </div>
               
-              <div className="flex items-center">
-                <img 
-                  src={courseDetails.instructorDetails.image} 
-                  alt={courseDetails.instructorDetails.name}
-                  className="w-10 h-10 rounded-full object-cover mr-3"
-                />
-                <span>Created by <span className="font-medium">{courseDetails.instructorDetails.name}</span></span>
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="relative aspect-video">
+                  <img 
+                    src={course.image} 
+                    alt={course.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <div className="bg-white/90 rounded-full p-4 cursor-pointer hover:bg-white transition-colors">
+                      <Play className="w-8 h-8 text-primary" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="text-3xl font-bold">${course.price.toFixed(2)}</div>
+                  </div>
+                  
+                  <Button className="w-full mb-4" size="lg">
+                    Enroll Now
+                  </Button>
+                  
+                  <Button variant="outline" className="w-full" size="lg">
+                    Add to Wishlist
+                  </Button>
+                  
+                  <div className="mt-6 text-sm">
+                    <p className="mb-2">This course includes:</p>
+                    <ul className="space-y-2">
+                      <li className="flex items-start">
+                        <Clock className="w-4 h-4 mr-2 mt-0.5" />
+                        <span>{courseDetails.totalDuration} on-demand video</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Award className="w-4 h-4 mr-2 mt-0.5" />
+                        <span>Certificate of completion</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
         
         {/* Course Content */}
-        <section className="py-10">
+        <section className="py-12">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row gap-8">
-              {/* Main Course Content */}
-              <div className="lg:w-8/12">
-                {/* Preview Image/Video */}
-                <div className="mb-8 relative rounded-lg overflow-hidden bg-black aspect-video animate-fade-in">
-                  {isVideoPlaying ? (
-                    <div className="absolute inset-0 flex items-center justify-center text-white">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto"></div>
-                        <p className="mt-2">Loading video...</p>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="md:col-span-2">
+                {/* What You'll Learn */}
+                <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
+                  <h2 className="text-xl font-bold mb-4">What You'll Learn</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {courseDetails.whatYouWillLearn.map((item, index) => (
+                      <div key={index} className="flex items-start">
+                        <Check className="w-5 h-5 mr-2 text-primary flex-shrink-0" />
+                        <span>{item}</span>
                       </div>
-                    </div>
-                  ) : (
-                    <>
-                      <img 
-                        src={course.image} 
-                        alt={course.title}
-                        className="w-full h-full object-cover opacity-80"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Button 
-                          className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full w-16 h-16 flex items-center justify-center"
-                          onClick={handlePlayVideo}
-                        >
-                          <Play className="h-8 w-8 fill-white" />
-                        </Button>
-                      </div>
-                      <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
-                        Watch Preview
-                      </div>
-                    </>
-                  )}
+                    ))}
+                  </div>
                 </div>
                 
-                {/* Course Tabs */}
-                <Tabs defaultValue="overview" className="mb-8">
-                  <TabsList className="mb-6">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
-                    <TabsTrigger value="instructor">Instructor</TabsTrigger>
-                    <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="overview" className="animate-fade-in">
-                    <div className="space-y-8">
-                      {/* What You'll Learn */}
-                      <div className="bg-white shadow-sm rounded-lg p-6">
-                        <h3 className="text-xl font-semibold mb-4">What you'll learn</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {courseDetails.whatYouWillLearn.map((item, index) => (
-                            <div key={index} className="flex">
-                              <CheckCircle className="w-5 h-5 text-primary mr-3 flex-shrink-0" />
-                              <span>{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      {/* Requirements */}
-                      <div className="bg-white shadow-sm rounded-lg p-6">
-                        <h3 className="text-xl font-semibold mb-4">Requirements</h3>
-                        <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                          {courseDetails.requirements.map((req, index) => (
-                            <li key={index}>{req}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      
-                      {/* Description */}
-                      <div className="bg-white shadow-sm rounded-lg p-6">
-                        <h3 className="text-xl font-semibold mb-4">Description</h3>
-                        <div className="prose max-w-none text-muted-foreground">
-                          <p>{courseDetails.description}</p>
-                        </div>
-                      </div>
+                {/* Course Content */}
+                <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
+                  <h2 className="text-xl font-bold mb-4">Course Content</h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-sm text-muted-foreground">
+                      {courseDetails.sections.length} sections • {courseDetails.totalLectures} lectures • {courseDetails.totalDuration} total length
                     </div>
-                  </TabsContent>
+                  </div>
                   
-                  <TabsContent value="curriculum" className="animate-fade-in">
-                    <CourseContent 
-                      sections={courseDetails.sections}
-                      totalLectures={courseDetails.totalLectures}
-                      totalDuration={courseDetails.totalDuration}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="instructor" className="animate-fade-in">
-                    <div className="bg-white shadow-sm rounded-lg p-6">
-                      <div className="flex flex-col md:flex-row gap-6">
-                        <div className="md:w-1/4">
-                          <img 
-                            src={courseDetails.instructorDetails.image} 
-                            alt={courseDetails.instructorDetails.name}
-                            className="w-32 h-32 object-cover rounded-full mx-auto"
-                          />
-                        </div>
-                        <div className="md:w-3/4">
-                          <h3 className="text-xl font-semibold mb-2">{courseDetails.instructorDetails.name}</h3>
-                          
-                          <div className="flex items-center text-sm text-muted-foreground mb-4">
-                            {renderStars(courseDetails.instructorDetails.rating)}
-                            <span className="ml-2">{courseDetails.instructorDetails.rating.toFixed(1)} Instructor Rating</span>
-                            <span className="mx-2">•</span>
-                            <span>{courseDetails.instructorDetails.reviewCount.toLocaleString()} Reviews</span>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                            <div className="bg-secondary p-3 rounded-lg text-center">
-                              <div className="text-lg font-semibold">{courseDetails.instructorDetails.studentsCount.toLocaleString()}</div>
-                              <div className="text-xs text-muted-foreground">Students</div>
-                            </div>
-                            <div className="bg-secondary p-3 rounded-lg text-center">
-                              <div className="text-lg font-semibold">{courseDetails.instructorDetails.coursesCount}</div>
-                              <div className="text-xs text-muted-foreground">Courses</div>
-                            </div>
-                          </div>
-                          
-                          <p className="text-muted-foreground">
-                            {courseDetails.instructorDetails.bio}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="reviews" className="animate-fade-in">
-                    <div className="bg-white shadow-sm rounded-lg p-6">
-                      <div className="flex flex-col md:flex-row gap-6">
-                        <div className="md:w-1/3 text-center p-6 border-r">
-                          <div className="text-5xl font-bold text-primary mb-2">{course.rating.toFixed(1)}</div>
-                          <div className="flex justify-center mb-2">
-                            {renderStars(course.rating)}
+                  <div className="space-y-3">
+                    {courseDetails.sections.map((section, index) => (
+                      <div key={index} className="border rounded-md overflow-hidden">
+                        <div 
+                          className="flex items-center justify-between p-4 cursor-pointer bg-secondary/50 hover:bg-secondary/70"
+                          onClick={() => toggleSection(index)}
+                        >
+                          <div className="font-medium flex items-center">
+                            {expandedSections[index] ? (
+                              <ChevronUp className="w-5 h-5 mr-2" />
+                            ) : (
+                              <ChevronDown className="w-5 h-5 mr-2" />
+                            )}
+                            {section.title}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            Course Rating ({course.reviewCount.toLocaleString()} ratings)
+                            {section.lectures} lectures • {section.duration}
                           </div>
                         </div>
                         
-                        <div className="md:w-2/3">
-                          <h3 className="text-xl font-semibold mb-4">Student Feedback</h3>
-                          
-                          {/* Rating Bars - 5 to 1 stars */}
-                          <div className="space-y-3">
-                            {[5, 4, 3, 2, 1].map((stars) => {
-                              // Calculate percentage based on a distribution
-                              const percentage = stars === 5 ? 78 :
-                                                stars === 4 ? 15 :
-                                                stars === 3 ? 5 :
-                                                stars === 2 ? 1 : 1;
-                              
-                              return (
-                                <div key={stars} className="flex items-center">
-                                  <div className="flex items-center mr-2">
-                                    <span className="text-sm text-muted-foreground mr-1">{stars}</span>
-                                    <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                  </div>
-                                  <div className="flex-grow bg-gray-200 rounded-full h-2 mr-2">
-                                    <div 
-                                      className="bg-primary h-2 rounded-full"
-                                      style={{ width: `${percentage}%` }}
-                                    ></div>
-                                  </div>
-                                  <span className="text-sm text-muted-foreground">{percentage}%</span>
-                                </div>
-                              );
-                            })}
+                        {expandedSections[index] && section.content && (
+                          <div className="p-4 bg-white border-t">
+                            <ul className="space-y-3">
+                              {section.content.map((lecture, lectureIndex) => (
+                                <li key={lectureIndex} className="flex items-center">
+                                  <Play className="w-4 h-4 mr-3 text-muted-foreground" />
+                                  <span>{lecture}</span>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
-                        </div>
+                        )}
                       </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-                
-                {/* Related Courses */}
-                {relatedCourses.length > 0 && (
-                  <div className="mt-12">
-                    <h3 className="text-xl font-semibold mb-6">Related Courses</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {relatedCourses.map((relatedCourse) => (
-                        <CourseCard key={relatedCourse.id} {...relatedCourse} />
-                      ))}
-                    </div>
+                    ))}
                   </div>
-                )}
+                </div>
+                
+                {/* Requirements */}
+                <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
+                  <h2 className="text-xl font-bold mb-4">Requirements</h2>
+                  <ul className="space-y-2">
+                    {courseDetails.requirements.map((req, index) => (
+                      <li key={index} className="flex items-start">
+                        <div className="w-1.5 h-1.5 rounded-full bg-foreground mt-2 mr-3" />
+                        <span>{req}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
               
-              {/* Sidebar */}
-              <div className="lg:w-4/12">
-                <div className="sticky top-24">
-                  <div className="bg-white shadow-lg rounded-lg overflow-hidden animate-scale-in">
-                    <div className="p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <span className="text-3xl font-bold">${course.price.toFixed(2)}</span>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="icon" aria-label="Wishlist">
-                            <Heart className="w-5 h-5" />
-                          </Button>
-                          <Button variant="outline" size="icon" aria-label="Share">
-                            <Share2 className="w-5 h-5" />
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-3 mb-6">
-                        <Button className="w-full flex items-center justify-center" size="lg">
-                          <ShoppingCart className="w-5 h-5 mr-2" />
-                          Add to Cart
-                        </Button>
-                        <Button variant="outline" className="w-full" size="lg">
-                          Buy Now
-                        </Button>
-                      </div>
-                      
-                      <div className="text-sm text-center text-muted-foreground mb-6">
-                        30-Day Money-Back Guarantee
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <h4 className="font-medium">This course includes:</h4>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-start">
-                            <Globe className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
-                            <span>{courseDetails.totalDuration} on-demand video</span>
-                          </div>
-                          <div className="flex items-start">
-                            <CheckCircle className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
-                            <span>{courseDetails.totalLectures} lectures</span>
-                          </div>
-                          <div className="flex items-start">
-                            <Clock className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
-                            <span>Full lifetime access</span>
-                          </div>
-                          <div className="flex items-start">
-                            <Globe className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
-                            <span>Access on mobile and TV</span>
-                          </div>
-                          {courseDetails.certificate && (
-                            <div className="flex items-start">
-                              <Award className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
-                              <span>Certificate of completion</span>
-                            </div>
-                          )}
-                        </div>
+              {/* Instructor */}
+              <div>
+                <div className="bg-white p-6 rounded-lg shadow-sm sticky top-24">
+                  <h2 className="text-xl font-bold mb-4">Instructor</h2>
+                  <div className="flex items-center mb-4">
+                    <img 
+                      src={courseDetails.instructorDetails.image} 
+                      alt={courseDetails.instructorDetails.name}
+                      className="w-16 h-16 rounded-full object-cover mr-4"
+                    />
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        {courseDetails.instructorDetails.name}
+                      </h3>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 mr-1" />
+                        {courseDetails.instructorDetails.rating} Instructor Rating
                       </div>
                     </div>
                   </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                    <div>
+                      <div className="font-medium">{courseDetails.instructorDetails.reviewCount.toLocaleString()}</div>
+                      <div className="text-muted-foreground">Reviews</div>
+                    </div>
+                    <div>
+                      <div className="font-medium">{courseDetails.instructorDetails.studentsCount.toLocaleString()}</div>
+                      <div className="text-muted-foreground">Students</div>
+                    </div>
+                    <div>
+                      <div className="font-medium">{courseDetails.instructorDetails.coursesCount}</div>
+                      <div className="text-muted-foreground">Courses</div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm mb-4">
+                    {courseDetails.instructorDetails.bio}
+                  </p>
                 </div>
               </div>
             </div>

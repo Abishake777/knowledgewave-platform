@@ -71,7 +71,9 @@ const Navbar = () => {
           <Button variant="ghost" size="icon" aria-label="Search">
             <Search className="w-5 h-5" />
           </Button>
-          <Button>Sign In</Button>
+          <Link to="/signin">
+            <Button>Sign In</Button>
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
@@ -103,9 +105,11 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="flex flex-col space-y-4 pt-4 border-t">
-              <Button size="lg" className="w-full">
-                Sign In
-              </Button>
+              <Link to="/signin">
+                <Button size="lg" className="w-full">
+                  Sign In
+                </Button>
+              </Link>
             </div>
           </nav>
         </div>
