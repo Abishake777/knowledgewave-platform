@@ -1,17 +1,10 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-type WishlistItem = {
-  id: string;
-  title: string;
-  image: string;
-  price: number;
-  instructor: string;
-};
+import { CourseProps } from '@/components/CourseCard';
 
 type WishlistContextType = {
-  wishlist: WishlistItem[];
-  addToWishlist: (item: WishlistItem) => void;
+  wishlist: CourseProps[];
+  addToWishlist: (item: CourseProps) => void;
   removeFromWishlist: (id: string) => void;
   isInWishlist: (id: string) => boolean;
 };
@@ -19,7 +12,7 @@ type WishlistContextType = {
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const [wishlist, setWishlist] = useState<CourseProps[]>([]);
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
@@ -34,7 +27,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
 
-  const addToWishlist = (item: WishlistItem) => {
+  const addToWishlist = (item: CourseProps) => {
     if (!isInWishlist(item.id)) {
       setWishlist((prev) => [...prev, item]);
     }

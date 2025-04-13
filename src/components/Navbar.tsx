@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingCart, User, LogOut, Bookmark, GraduationCap } from 'lucide-react';
@@ -7,16 +6,16 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 
 const Navbar = () => {
   const location = useLocation();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, isAuthenticated, logout, isTutor } = useAuth();
-  const { cart } = useCart();
+  const { cartItems } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,9 +86,9 @@ const Navbar = () => {
                 <Link to="/cart">
                   <Button variant="ghost" size="icon" className="relative">
                     <ShoppingCart className="h-5 w-5" />
-                    {cart.length > 0 && (
+                    {cartItems.length > 0 && (
                       <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center">
-                        {cart.length}
+                        {cartItems.length}
                       </Badge>
                     )}
                   </Button>
@@ -142,9 +141,9 @@ const Navbar = () => {
                 <Link to="/cart">
                   <Button variant="ghost" size="icon" className="relative">
                     <ShoppingCart className="h-5 w-5" />
-                    {cart.length > 0 && (
+                    {cartItems.length > 0 && (
                       <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center">
-                        {cart.length}
+                        {cartItems.length}
                       </Badge>
                     )}
                   </Button>
@@ -164,7 +163,6 @@ const Navbar = () => {
               </>
             )}
 
-            {/* Mobile Menu */}
             {isMobile && (
               <Sheet>
                 <SheetTrigger asChild>

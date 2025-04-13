@@ -9,28 +9,29 @@ interface Lecture {
   id: string;
   title: string;
   duration: string;
-  type: 'video' | 'document' | 'quiz';
+  isLocked?: boolean;
+  type?: 'video' | 'document' | 'quiz';
   isPreview?: boolean;
 }
 
-interface Section {
+interface Chapter {
   id: string;
   title: string;
-  lectures: Lecture[];
+  lessons: Lecture[];
 }
 
 interface CourseContentProps {
-  sections: Section[];
-  totalLectures: number;
-  totalDuration: string;
+  chapters: Chapter[];
+  totalLectures?: number;
+  totalDuration?: string;
 }
 
 const CourseContent = ({
-  sections,
+  chapters,
   totalLectures,
   totalDuration,
 }: CourseContentProps) => {
-  const [expandedSections, setExpandedSections] = useState<string[]>([sections[0]?.id]);
+  const [expandedSections, setExpandedSections] = useState<string[]>([chapters[0]?.id]);
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) =>
@@ -40,7 +41,11 @@ const CourseContent = ({
     );
   };
 
-  const getLectureIcon = (type: string) => {
+  const getLectureIcon = (type?: string, isLocked?: boolean) => {
+    if (isLocked) {
+      return <File className="w-4 h-4" />;
+    }
+    
     switch (type) {
       case 'video':
         return <Play className="w-4 h-4" />;
@@ -53,66 +58,78 @@ const CourseContent = ({
     }
   };
 
+  // Calculate total lectures and duration if not provided
+  const calculatedTotalLectures = totalLectures || 
+    chapters.reduce((total, chapter) => total + chapter.lessons.length, 0);
+  
+  const calculatedTotalDuration = totalDuration || 
+    chapters.reduce((total, chapter) => {
+      return chapter.lessons.reduce((chapterTotal, lesson) => {
+        const minutes = parseInt(lesson.duration.split(':')[0] || '0', 10);
+        return chapterTotal + minutes;
+      }, total);
+    }, 0) + ' min';
+
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       <div className="p-6 border-b">
         <h3 className="text-xl font-semibold mb-2">Course Content</h3>
         <div className="flex items-center text-sm text-muted-foreground gap-4">
-          <span>{sections.length} sections</span>
+          <span>{chapters.length} sections</span>
           <span>•</span>
-          <span>{totalLectures} lectures</span>
+          <span>{calculatedTotalLectures} lectures</span>
           <span>•</span>
           <span className="flex items-center">
             <Clock className="w-4 h-4 mr-1" />
-            {totalDuration} total length
+            {calculatedTotalDuration} total length
           </span>
         </div>
       </div>
 
       <div className="divide-y">
-        {sections.map((section) => (
-          <div key={section.id} className="bg-white">
+        {chapters.map((chapter) => (
+          <div key={chapter.id} className="bg-white">
             <button
-              onClick={() => toggleSection(section.id)}
+              onClick={() => toggleSection(chapter.id)}
               className="w-full p-4 flex items-center justify-between hover:bg-secondary/30 transition-colors duration-200"
             >
               <div className="flex items-center">
-                {expandedSections.includes(section.id) ? (
+                {expandedSections.includes(chapter.id) ? (
                   <ChevronUp className="w-5 h-5 mr-2 text-primary" />
                 ) : (
                   <ChevronDown className="w-5 h-5 mr-2" />
                 )}
-                <span className="font-medium">{section.title}</span>
+                <span className="font-medium">{chapter.title}</span>
               </div>
               <div className="text-sm text-muted-foreground">
-                {section.lectures.length} lectures • {section.lectures.reduce((acc, lecture) => acc + parseInt(lecture.duration.split(':')[0]), 0)} min
+                {chapter.lessons.length} lectures
               </div>
             </button>
 
-            {expandedSections.includes(section.id) && (
+            {expandedSections.includes(chapter.id) && (
               <div className="bg-secondary/30 px-4 py-2 divide-y divide-border/40">
-                {section.lectures.map((lecture) => (
+                {chapter.lessons.map((lesson) => (
                   <div
-                    key={lecture.id}
+                    key={lesson.id}
                     className={cn(
                       "py-3 px-2 flex items-center justify-between text-sm",
-                      lecture.isPreview && "hover:bg-secondary/50 cursor-pointer rounded transition-colors"
+                      !lesson.isLocked && "hover:bg-secondary/50 cursor-pointer rounded transition-colors"
                     )}
                   >
                     <div className="flex items-center">
                       <span className="w-6 h-6 flex items-center justify-center mr-2 text-muted-foreground">
-                        {getLectureIcon(lecture.type)}
+                        {getLectureIcon(lesson.type, lesson.isLocked)}
                       </span>
-                      <span>{lecture.title}</span>
-                      {lecture.isPreview && (
+                      <span>{lesson.title}</span>
+                      {!lesson.isLocked && (
                         <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                           Preview
                         </span>
                       )}
                     </div>
                     <div className="flex items-center">
-                      <span className="text-muted-foreground mr-2">{lecture.duration}</span>
-                      {lecture.isPreview && (
+                      <span className="text-muted-foreground mr-2">{lesson.duration}</span>
+                      {!lesson.isLocked && (
                         <Button
                           variant="ghost"
                           size="icon"

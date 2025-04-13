@@ -15,8 +15,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
+import { CourseProps } from '@/components/CourseCard';
 
-// Mock data for the course details page - in a real app, this would come from an API
 const courseDetails = {
   id: '4',
   title: 'Advanced JavaScript: Building Modern Web Applications',
@@ -40,7 +40,6 @@ const courseDetails = {
   hasVideos: true
 };
 
-// Mock course chapters and lessons
 const chapters = [
   {
     id: 'chapter-1',
@@ -74,7 +73,6 @@ const chapters = [
   },
 ];
 
-// Mock course reviews
 const reviews = [
   {
     id: 'review-1',
@@ -115,7 +113,6 @@ export default function CourseDetail() {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { isAuthenticated } = useAuth();
   
-  // In a real app, you would fetch the course by ID from an API
   const course = courseDetails;
   
   const handleAddToCart = () => {
@@ -127,13 +124,20 @@ export default function CourseDetail() {
       return;
     }
     
-    addToCart({
+    const courseToAdd: CourseProps = {
       id: course.id,
       title: course.title,
       price: course.discountPrice || course.price,
       instructor: course.instructor.name,
-      image: course.image
-    });
+      image: course.image,
+      rating: course.rating,
+      reviewCount: course.reviewsCount,
+      duration: course.duration,
+      level: 'Intermediate' as 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels',
+      category: course.tags[0] || 'Web Development'
+    };
+    
+    addToCart(courseToAdd);
     
     toast({
       title: "Added to cart",
@@ -153,6 +157,19 @@ export default function CourseDetail() {
     
     const isWishlisted = isInWishlist(course.id);
     
+    const courseForWishlist: CourseProps = {
+      id: course.id,
+      title: course.title,
+      price: course.discountPrice || course.price,
+      instructor: course.instructor.name,
+      image: course.image,
+      rating: course.rating,
+      reviewCount: course.reviewsCount,
+      duration: course.duration,
+      level: 'Intermediate' as 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels',
+      category: course.tags[0] || 'Web Development'
+    };
+    
     if (isWishlisted) {
       removeFromWishlist(course.id);
       toast({
@@ -160,13 +177,7 @@ export default function CourseDetail() {
         description: `${course.title} has been removed from your wishlist.`
       });
     } else {
-      addToWishlist({
-        id: course.id,
-        title: course.title,
-        price: course.discountPrice || course.price,
-        instructor: course.instructor.name,
-        image: course.image
-      });
+      addToWishlist(courseForWishlist);
       toast({
         title: "Added to wishlist",
         description: `${course.title} has been added to your wishlist.`
@@ -179,10 +190,8 @@ export default function CourseDetail() {
       <Navbar />
       
       <main className="flex-grow pt-20">
-        {/* Course Header */}
         <div className="bg-muted/30 pt-10 pb-10">
           <div className="container mx-auto px-4">
-            {/* Breadcrumbs */}
             <div className="flex items-center text-sm mb-6">
               <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
                 Home
@@ -343,10 +352,8 @@ export default function CourseDetail() {
           </div>
         </div>
         
-        {/* Course Content */}
         <div className="py-10">
           <div className="container mx-auto px-4">
-            {/* Video Player (if course has videos) */}
             {course.hasVideos && (
               <CourseVideoPlayer courseId={course.id} />
             )}
