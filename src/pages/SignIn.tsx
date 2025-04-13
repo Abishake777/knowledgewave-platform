@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from '@/context/AuthContext';
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -27,6 +28,8 @@ const formSchema = z.object({
 const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,10 +45,25 @@ const SignIn = () => {
     // Simulate authentication delay
     setTimeout(() => {
       setIsLoading(false);
+      
+      // Mock user data (in a real app, this would come from the server)
+      const userData = {
+        id: "1",
+        name: "John Doe",
+        email: values.email,
+        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=250&q=80"
+      };
+      
+      // Log the user in
+      login(userData);
+      
       toast({
         title: "Sign in successful",
         description: "Welcome back to EduLearn!",
       });
+      
+      // Redirect to home page
+      navigate('/');
     }, 1500);
   }
 
