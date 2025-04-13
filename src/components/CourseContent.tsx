@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { CheckCircle, Clock, Globe, ChevronDown, ChevronUp, Play, File, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -58,7 +57,6 @@ const CourseContent = ({
     }
   };
 
-  // Calculate total lectures and duration if not provided
   const calculatedTotalLectures = totalLectures || 
     chapters.reduce((total, chapter) => total + chapter.lessons.length, 0);
   

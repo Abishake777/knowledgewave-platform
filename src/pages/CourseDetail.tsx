@@ -241,14 +241,16 @@ export default function CourseDetail() {
                 </div>
                 
                 <div className="flex items-center mb-4">
-                  <Avatar className="h-10 w-10 mr-3">
-                    <AvatarImage src={course.instructor.avatar} alt={course.instructor.name} />
-                    <AvatarFallback>{course.instructor.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">Instructor</p>
-                    <p className="text-muted-foreground text-sm">{course.instructor.name}</p>
-                  </div>
+                  <Link to={`/teacher/1`} className="flex items-center hover:bg-muted rounded-md p-1 transition-colors">
+                    <Avatar className="h-10 w-10 mr-3">
+                      <AvatarImage src={course.instructor.avatar} alt={course.instructor.name} />
+                      <AvatarFallback>{course.instructor.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">Instructor</p>
+                      <p className="text-primary text-sm">{course.instructor.name}</p>
+                    </div>
+                  </Link>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-4 mb-6">
@@ -386,16 +388,23 @@ export default function CourseDetail() {
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row gap-6">
                       <div className="md:w-1/4">
-                        <Avatar className="h-24 w-24">
-                          <AvatarImage src={course.instructor.avatar} alt={course.instructor.name} />
-                          <AvatarFallback>{course.instructor.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
+                        <Link to={`/teacher/1`}>
+                          <Avatar className="h-24 w-24">
+                            <AvatarImage src={course.instructor.avatar} alt={course.instructor.name} />
+                            <AvatarFallback>{course.instructor.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                        </Link>
                       </div>
                       <div className="md:w-3/4">
-                        <h3 className="text-xl font-semibold mb-2">{course.instructor.name}</h3>
+                        <Link to={`/teacher/1`} className="hover:text-primary transition-colors">
+                          <h3 className="text-xl font-semibold mb-2">{course.instructor.name}</h3>
+                        </Link>
                         <p className="text-muted-foreground mb-4">
                           {course.instructor.bio}
                         </p>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/teacher/1`}>View Profile</Link>
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
