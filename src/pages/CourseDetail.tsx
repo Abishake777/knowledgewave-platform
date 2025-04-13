@@ -1,13 +1,14 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, Clock, Globe, CheckCircle, Award, Heart, Share2, Play } from 'lucide-react';
+import { Star, Clock, Globe, CheckCircle, Award, Heart, Share2, Play, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import CourseCard, { CourseProps } from '@/components/CourseCard';
+import { useCart } from '@/context/CartContext';
+import { useToast } from '@/components/ui/use-toast';
 
 interface CourseDetailProps extends CourseProps {
   description: string;
@@ -29,7 +30,6 @@ interface CourseDetailProps extends CourseProps {
   fullLifetimeAccess: boolean;
 }
 
-// Sample data for all courses
 const allCourses: CourseProps[] = [
   {
     id: '1',
@@ -81,7 +81,6 @@ const allCourses: CourseProps[] = [
   },
 ];
 
-// Extended course details
 const extendedCourseDetails: Record<string, CourseDetailProps> = {
   '1': {
     id: '1',
@@ -225,17 +224,16 @@ const CourseDetail = () => {
   const [course, setCourse] = useState<CourseProps | null>(null);
   const [courseDetails, setCourseDetails] = useState<CourseDetailProps | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const { addToCart, isInCart } = useCart();
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Scroll to top on page load
     window.scrollTo(0, 0);
     
-    // Find the course by ID
     const foundCourse = allCourses.find(c => c.id === id);
     if (foundCourse) {
       setCourse(foundCourse);
       
-      // Get extended details
       const details = extendedCourseDetails[id || ''];
       if (details) {
         setCourseDetails(details);
@@ -245,7 +243,23 @@ const CourseDetail = () => {
 
   const handlePlayVideo = () => {
     setIsVideoPlaying(true);
-    // In a real app, you would play the video here
+  };
+
+  const handleAddToCart = () => {
+    if (course) {
+      addToCart(course);
+      toast({
+        title: "Course added to cart",
+        description: `${course.title} has been added to your cart.`,
+      });
+    }
+  };
+
+  const handleEnrollNow = () => {
+    if (course && !isInCart(course.id)) {
+      addToCart(course);
+    }
+    window.location.href = '/checkout';
   };
 
   if (!course || !courseDetails) {
@@ -261,7 +275,6 @@ const CourseDetail = () => {
       <Navbar />
       
       <main className="flex-grow pt-20">
-        {/* Course Header */}
         <section className="bg-secondary py-10">
           <div className="container mx-auto px-4">
             <div className="flex flex-col lg:flex-row gap-8">
@@ -297,7 +310,16 @@ const CourseDetail = () => {
                 </p>
                 
                 <div className="flex flex-wrap gap-3">
-                  <Button>Enroll Now</Button>
+                  <Button onClick={handleEnrollNow}>Enroll Now</Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center"
+                    onClick={handleAddToCart}
+                    disabled={isInCart(course.id)}
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    {isInCart(course.id) ? 'In Cart' : 'Add to Cart'}
+                  </Button>
                   <Button variant="outline" className="flex items-center">
                     <Heart className="w-4 h-4 mr-2" />
                     Wishlist
@@ -313,7 +335,6 @@ const CourseDetail = () => {
                 <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
                   {isVideoPlaying ? (
                     <div className="w-full h-full">
-                      {/* Video player would go here in a real app */}
                       <div className="flex items-center justify-center h-full text-white">
                         Video is playing...
                       </div>
@@ -343,11 +364,9 @@ const CourseDetail = () => {
           </div>
         </section>
         
-        {/* Course Content */}
         <section className="py-10">
           <div className="container mx-auto px-4">
             <div className="flex flex-col lg:flex-row gap-8">
-              {/* Main Course Content */}
               <div className="lg:w-8/12">
                 <Tabs defaultValue="overview" className="mb-8">
                   <TabsList className="mb-4">
@@ -438,7 +457,6 @@ const CourseDetail = () => {
                     <div className="space-y-6">
                       <div className="flex items-start gap-4">
                         <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
-                          {/* Placeholder for instructor image */}
                           <span className="text-2xl font-bold">{course.instructor.charAt(0)}</span>
                         </div>
                         <div>
@@ -480,7 +498,6 @@ const CourseDetail = () => {
                         </div>
                         
                         <div className="flex-1">
-                          {/* Rating bars would go here */}
                           <div className="space-y-2">
                             {[5, 4, 3, 2, 1].map(num => (
                               <div key={num} className="flex items-center gap-2">
@@ -504,7 +521,6 @@ const CourseDetail = () => {
                       
                       <div>
                         <h3 className="text-xl font-semibold mb-4">Student Reviews</h3>
-                        {/* Sample reviews would go here */}
                         <div className="space-y-6">
                           {[1, 2, 3].map(i => (
                             <div key={i} className="border-b pb-6">
@@ -534,7 +550,6 @@ const CourseDetail = () => {
                 </Tabs>
               </div>
               
-              {/* Sidebar */}
               <div className="lg:w-4/12">
                 <div className="sticky top-24">
                   <div className="bg-white shadow-lg rounded-lg overflow-hidden animate-scale-in">
@@ -547,8 +562,16 @@ const CourseDetail = () => {
                       </div>
                       
                       <div className="space-y-4 mb-6">
-                        <Button className="w-full">Enroll Now</Button>
-                        <Button variant="outline" className="w-full">Add to Wishlist</Button>
+                        <Button className="w-full" onClick={handleEnrollNow}>Enroll Now</Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={handleAddToCart}
+                          disabled={isInCart(course.id)}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          {isInCart(course.id) ? 'In Cart' : 'Add to Cart'}
+                        </Button>
                       </div>
                       
                       <div className="space-y-4">

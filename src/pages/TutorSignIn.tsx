@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, BookOpen } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ const formSchema = z.object({
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
 });
 
-const SignIn = () => {
+const TutorSignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { login } = useAuth();
@@ -46,25 +46,25 @@ const SignIn = () => {
     setTimeout(() => {
       setIsLoading(false);
       
-      // Mock user data (in a real app, this would come from the server)
+      // Mock tutor data (in a real app, this would come from the server)
       const userData = {
-        id: "1",
-        name: "John Doe",
+        id: "tutor-1",
+        name: "Dr. Teaching Expert",
         email: values.email,
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=250&q=80",
-        role: "student" // Default role is student
+        avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=250&q=80",
+        role: "tutor" // Add role to distinguish tutors from students
       };
       
-      // Log the user in
+      // Log the tutor in
       login(userData);
       
       toast({
-        title: "Sign in successful",
-        description: "Welcome back to EduLearn!",
+        title: "Tutor sign in successful",
+        description: "Welcome to the EduLearn Tutor Dashboard!",
       });
       
-      // Redirect to home page
-      navigate('/');
+      // Redirect to tutor dashboard
+      navigate('/tutor/dashboard');
     }, 1500);
   }
 
@@ -77,16 +77,19 @@ const SignIn = () => {
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto items-center">
             <div className="hidden md:block">
               <img 
-                src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                alt="Learning platform" 
+                src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                alt="Teaching platform" 
                 className="rounded-lg shadow-lg object-cover h-[500px] w-full"
               />
             </div>
             
             <div className="bg-white p-8 rounded-lg shadow-sm">
               <div className="mb-6 text-center">
-                <h1 className="text-2xl font-bold mb-2">Welcome back</h1>
-                <p className="text-muted-foreground">Sign in to your account to continue learning</p>
+                <div className="flex justify-center mb-2">
+                  <BookOpen className="h-10 w-10 text-primary" />
+                </div>
+                <h1 className="text-2xl font-bold mb-2">Tutor Sign In</h1>
+                <p className="text-muted-foreground">Sign in to your tutor account to manage your courses</p>
               </div>
               
               <Form {...form}>
@@ -148,27 +151,16 @@ const SignIn = () => {
                     size="lg"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Signing in..." : "Sign In"}
+                    {isLoading ? "Signing in..." : "Sign In as Tutor"}
                   </Button>
                   
                   <div className="text-center mt-4">
                     <p className="text-sm text-muted-foreground">
-                      Don't have an account?{" "}
-                      <Link to="/signup" className="text-primary hover:underline">
-                        Sign up
+                      Are you a student?{" "}
+                      <Link to="/signin" className="text-primary hover:underline">
+                        Student Sign In
                       </Link>
                     </p>
-                  </div>
-                  
-                  <div className="pt-4 text-center border-t">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Are you a tutor?
-                    </p>
-                    <Link to="/tutor/signin">
-                      <Button variant="outline" size="sm">
-                        Tutor Sign In
-                      </Button>
-                    </Link>
                   </div>
                 </form>
               </Form>
@@ -182,4 +174,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default TutorSignIn;

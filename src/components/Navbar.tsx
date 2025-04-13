@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Search, BookOpen, User, LogOut } from 'lucide-react';
+import { Menu, X, Search, BookOpen, User, LogOut, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -21,6 +22,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const { cartItems } = useCart();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -98,11 +100,22 @@ const Navbar = () => {
           ))}
         </nav>
 
-        {/* Right Side - Search & Sign In/Profile */}
+        {/* Right Side - Search, Cart & Sign In/Profile */}
         <div className="hidden md:flex items-center space-x-4">
           <Button variant="ghost" size="icon" aria-label="Search">
             <Search className="w-5 h-5" />
           </Button>
+          
+          <Link to="/cart">
+            <Button variant="ghost" size="icon" className="relative" aria-label="Shopping Cart">
+              <ShoppingCart className="w-5 h-5" />
+              {cartItems.length > 0 && (
+                <Badge variant="destructive" className="absolute -top-2 -right-2 min-w-5 h-5 flex items-center justify-center rounded-full text-xs">
+                  {cartItems.length}
+                </Badge>
+              )}
+            </Button>
+          </Link>
           
           {isAuthenticated ? (
             <DropdownMenu>
@@ -169,6 +182,15 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+            <Link to="/cart" className="flex items-center py-2 space-x-2">
+              <ShoppingCart className="h-5 w-5" />
+              <span>Cart</span>
+              {cartItems.length > 0 && (
+                <Badge variant="destructive" className="ml-2 min-w-5 h-5 flex items-center justify-center rounded-full text-xs">
+                  {cartItems.length}
+                </Badge>
+              )}
+            </Link>
             <div className="flex flex-col space-y-4 pt-4 border-t">
               {isAuthenticated ? (
                 <>
