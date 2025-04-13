@@ -52,7 +52,7 @@ const SignIn = () => {
         name: "John Doe",
         email: values.email,
         avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=250&q=80",
-        role: "student" // Default role is student
+        role: "student" as "student" // Explicitly type as literal "student"
       };
       
       // Log the user in

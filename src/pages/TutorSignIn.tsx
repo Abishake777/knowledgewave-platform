@@ -52,7 +52,7 @@ const TutorSignIn = () => {
         name: "Dr. Teaching Expert",
         email: values.email,
         avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=250&q=80",
-        role: "tutor" // Add role to distinguish tutors from students
+        role: "tutor" as "tutor" // Explicitly type as literal "tutor"
       };
       
       // Log the tutor in
