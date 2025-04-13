@@ -22,11 +22,11 @@ const courseDetails = {
   id: '4',
   title: 'Advanced JavaScript: Building Modern Web Applications',
   description: 'Dive deep into JavaScript and learn to build modern, responsive web applications with the latest techniques and frameworks.',
-  longDescription: 'This comprehensive course takes you through the entire JavaScript ecosystem, from core concepts to advanced topics. You'll master modern ES6+ syntax, asynchronous programming, and state management. By the end of this course, you'll be able to build sophisticated web applications using the latest frameworks and tools.\n\nWe'll explore real-world scenarios and build projects that you can include in your portfolio, making you job-ready for the competitive web development market.',
+  longDescription: 'This comprehensive course takes you through the entire JavaScript ecosystem, from core concepts to advanced topics. You\'ll master modern ES6+ syntax, asynchronous programming, and state management. By the end of this course, you\'ll be able to build sophisticated web applications using the latest frameworks and tools.\n\nWe\'ll explore real-world scenarios and build projects that you can include in your portfolio, making you job-ready for the competitive web development market.',
   instructor: {
     name: 'Alex Johnson',
     avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=250&q=80',
-    bio: 'Full Stack Developer with 10+ years of experience. Previously worked at Google and Microsoft, now teaching full-time.',
+    bio: 'Full Stack Developer with 10+ years of experience. Previously worked at Google and Microsoft, now teaching full-time.'
   },
   image: 'https://images.unsplash.com/photo-1593720219276-0b1eacd0aef4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2343&q=80',
   enrolledStudents: 1240,
