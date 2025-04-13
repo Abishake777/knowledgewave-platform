@@ -1,619 +1,498 @@
-import { useState, useEffect } from 'react';
+
 import { useParams, Link } from 'react-router-dom';
+import { ChevronRight, CheckCircle, ShoppingCart, Heart, BookOpen, Clock, Calendar, Video } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, Clock, Globe, CheckCircle, Award, Heart, Share2, Play, ShoppingCart } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import CourseCard, { CourseProps } from '@/components/CourseCard';
-import { useCart } from '@/context/CartContext';
+import CourseContent from '@/components/CourseContent';
+import CourseVideoPlayer from '@/components/CourseVideoPlayer';
 import { useToast } from '@/components/ui/use-toast';
+import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
+import { useAuth } from '@/context/AuthContext';
 
-interface CourseDetailProps extends CourseProps {
-  description: string;
-  whatYouWillLearn: string[];
-  requirements: string[];
-  curriculum: {
-    section: string;
-    lectures: {
-      title: string;
-      duration: string;
-      preview?: boolean;
-    }[];
-  }[];
-  totalLectures: number;
-  totalDuration: string;
-  lastUpdated: string;
-  language: string;
-  certificate: boolean;
-  fullLifetimeAccess: boolean;
-}
+// Mock data for the course details page - in a real app, this would come from an API
+const courseDetails = {
+  id: '4',
+  title: 'Advanced JavaScript: Building Modern Web Applications',
+  description: 'Dive deep into JavaScript and learn to build modern, responsive web applications with the latest techniques and frameworks.',
+  longDescription: 'This comprehensive course takes you through the entire JavaScript ecosystem, from core concepts to advanced topics. You'll master modern ES6+ syntax, asynchronous programming, and state management. By the end of this course, you'll be able to build sophisticated web applications using the latest frameworks and tools.\n\nWe'll explore real-world scenarios and build projects that you can include in your portfolio, making you job-ready for the competitive web development market.',
+  instructor: {
+    name: 'Alex Johnson',
+    avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=250&q=80',
+    bio: 'Full Stack Developer with 10+ years of experience. Previously worked at Google and Microsoft, now teaching full-time.',
+  },
+  image: 'https://images.unsplash.com/photo-1593720219276-0b1eacd0aef4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2343&q=80',
+  enrolledStudents: 1240,
+  level: 'Intermediate',
+  duration: '32 hours',
+  lastUpdated: 'December 2023',
+  price: 89.99,
+  discountPrice: 49.99,
+  rating: 4.8,
+  reviewsCount: 325,
+  tags: ['JavaScript', 'Web Development', 'React', 'Node.js'],
+  hasVideos: true
+};
 
-const allCourses: CourseProps[] = [
+// Mock course chapters and lessons
+const chapters = [
   {
-    id: '1',
-    title: 'Complete Web Development Bootcamp',
-    instructor: 'Dr. Angela Yu',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2344&q=80',
-    price: 89.99,
-    rating: 4.7,
-    reviewCount: 43520,
-    duration: '63 hours',
-    level: 'All Levels',
-    category: 'Web Development',
+    id: 'chapter-1',
+    title: 'JavaScript Fundamentals Refresher',
+    lessons: [
+      { id: 'lesson-1-1', title: 'Variables, Data Types, and Operators', duration: '12:30', isLocked: false },
+      { id: 'lesson-1-2', title: 'Control Flow: Conditionals and Loops', duration: '15:45', isLocked: false },
+      { id: 'lesson-1-3', title: 'Functions and Scope', duration: '18:20', isLocked: true },
+      { id: 'lesson-1-4', title: 'Objects and Arrays', duration: '22:15', isLocked: true },
+    ],
   },
   {
-    id: '2',
-    title: 'Machine Learning A-Z: Python & R In Data Science',
-    instructor: 'Kirill Eremenko',
-    image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80',
-    price: 94.99,
-    rating: 4.5,
-    reviewCount: 15230,
-    duration: '44 hours',
-    level: 'Intermediate',
-    category: 'Data Science',
+    id: 'chapter-2',
+    title: 'Modern JavaScript (ES6+)',
+    lessons: [
+      { id: 'lesson-2-1', title: 'Arrow Functions', duration: '10:15', isLocked: true },
+      { id: 'lesson-2-2', title: 'Destructuring and Spread Operators', duration: '14:30', isLocked: true },
+      { id: 'lesson-2-3', title: 'Template Literals and String Methods', duration: '11:45', isLocked: true },
+      { id: 'lesson-2-4', title: 'Modules and Import/Export', duration: '16:20', isLocked: true },
+    ],
   },
   {
-    id: '3',
-    title: 'iOS & Swift - Complete iOS App Development',
-    instructor: 'Dr. Angela Yu',
-    image: 'https://images.unsplash.com/photo-1621839673705-6617adf9e890?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2332&q=80',
-    price: 99.99,
-    rating: 4.8,
-    reviewCount: 8932,
-    duration: '55 hours',
-    level: 'Beginner',
-    category: 'Mobile Development',
-  },
-  {
-    id: '4',
-    title: 'The Complete Digital Marketing Course',
-    instructor: 'Rob Percival',
-    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2426&q=80',
-    price: 84.99,
-    rating: 4.4,
-    reviewCount: 23156,
-    duration: '20 hours',
-    level: 'All Levels',
-    category: 'Marketing',
+    id: 'chapter-3',
+    title: 'Asynchronous JavaScript',
+    lessons: [
+      { id: 'lesson-3-1', title: 'Callbacks and the Event Loop', duration: '17:30', isLocked: true },
+      { id: 'lesson-3-2', title: 'Promises', duration: '20:15', isLocked: true },
+      { id: 'lesson-3-3', title: 'Async/Await', duration: '18:45', isLocked: true },
+      { id: 'lesson-3-4', title: 'Fetch API and Axios', duration: '22:00', isLocked: true },
+    ],
   },
 ];
 
-const extendedCourseDetails: Record<string, CourseDetailProps> = {
-  '1': {
-    id: '1',
-    title: 'Complete Web Development Bootcamp',
-    instructor: 'Dr. Angela Yu',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2344&q=80',
-    price: 89.99,
-    rating: 4.7,
-    reviewCount: 43520,
-    duration: '63 hours',
-    level: 'All Levels',
-    category: 'Web Development',
-    description: 'Become a full-stack web developer with just one course. HTML, CSS, Javascript, Node, React, MongoDB, Web3 and DApps. This comprehensive course covers everything from the basics of HTML to advanced topics like blockchain development and Web3 integration.',
-    whatYouWillLearn: [
-      'Build 16 web development projects for your portfolio, ready to apply for junior developer jobs',
-      'Learn the latest technologies, including Javascript, React, Node and even Web3 development',
-      'Build fully-fledged websites and web apps for your startup or business',
-      'Master frontend development with React',
-      'Master backend development with Node',
-      'Learn professional developer best practices',
-    ],
-    requirements: [
-      "No programming experience needed - I'll teach you everything you need to know",
-      'A computer with access to the internet',
-      'No paid software required',
-      "I'll walk you through, step-by-step how to get all the software installed and set up",
-    ],
-    curriculum: [
-      {
-        section: 'Introduction to HTML',
-        lectures: [
-          { title: 'Introduction to Web Development', duration: '15:32' },
-          { title: 'HTML Basics', duration: '22:10', preview: true },
-          { title: 'HTML Forms and Inputs', duration: '18:45' },
-        ],
-      },
-      {
-        section: 'CSS Fundamentals',
-        lectures: [
-          { title: 'Introduction to CSS', duration: '20:15', preview: true },
-          { title: 'CSS Selectors', duration: '16:40' },
-          { title: 'CSS Box Model', duration: '19:22' },
-          { title: 'CSS Flexbox', duration: '25:18' },
-        ],
-      },
-      {
-        section: 'JavaScript Essentials',
-        lectures: [
-          { title: 'JavaScript Basics', duration: '28:10', preview: true },
-          { title: 'DOM Manipulation', duration: '24:45' },
-          { title: 'Event Handling', duration: '22:33' },
-          { title: 'Asynchronous JavaScript', duration: '35:20' },
-        ],
-      },
-    ],
-    totalLectures: 425,
-    totalDuration: '63 hours',
-    lastUpdated: 'November 2023',
-    language: 'English',
-    certificate: true,
-    fullLifetimeAccess: true,
+// Mock course reviews
+const reviews = [
+  {
+    id: 'review-1',
+    user: {
+      name: 'Sarah M.',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80',
+    },
+    rating: 5,
+    date: 'October 15, 2023',
+    comment: 'This course exceeded my expectations. The instructor explains complex concepts in a way that's easy to understand, and the projects really helped cement my knowledge.',
   },
-  '2': {
-    id: '2',
-    title: 'Machine Learning A-Z: Python & R In Data Science',
-    instructor: 'Kirill Eremenko',
-    image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80',
-    price: 94.99,
-    rating: 4.5,
-    reviewCount: 15230,
-    duration: '44 hours',
-    level: 'Intermediate',
-    category: 'Data Science',
-    description: 'Learn to create Machine Learning Algorithms in Python and R from two Data Science experts. Code templates included. This course has been designed by two professional Data Scientists so that we can share our knowledge and help you learn complex theory, algorithms, and coding libraries in a simple way.',
-    whatYouWillLearn: [
-      'Master Machine Learning on Python & R',
-      'Have a great intuition of many Machine Learning models',
-      'Make accurate predictions',
-      'Make powerful analysis',
-      'Make robust Machine Learning models',
-      'Create strong added value to your business',
-    ],
-    requirements: [
-      'Just some high school mathematics level.',
-      'Basic Python or R knowledge',
-    ],
-    curriculum: [
-      {
-        section: 'Data Preprocessing',
-        lectures: [
-          { title: 'Importing Libraries', duration: '12:30', preview: true },
-          { title: 'Importing Dataset', duration: '15:20' },
-          { title: 'Handling Missing Data', duration: '18:45' },
-        ],
-      },
-      {
-        section: 'Regression',
-        lectures: [
-          { title: 'Simple Linear Regression', duration: '25:15', preview: true },
-          { title: 'Multiple Linear Regression', duration: '28:40' },
-          { title: 'Polynomial Regression', duration: '22:22' },
-        ],
-      },
-      {
-        section: 'Classification',
-        lectures: [
-          { title: 'Logistic Regression', duration: '24:10', preview: true },
-          { title: 'K-Nearest Neighbors', duration: '22:45' },
-          { title: 'Support Vector Machine', duration: '26:33' },
-          { title: 'Kernel SVM', duration: '20:20' },
-        ],
-      },
-    ],
-    totalLectures: 320,
-    totalDuration: '44 hours',
-    lastUpdated: 'October 2023',
-    language: 'English',
-    certificate: true,
-    fullLifetimeAccess: true,
+  {
+    id: 'review-2',
+    user: {
+      name: 'Michael T.',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80',
+    },
+    rating: 4,
+    date: 'September 28, 2023',
+    comment: 'Great course for intermediate developers looking to level up their JavaScript skills. The section on asynchronous programming was particularly helpful for my work projects.',
   },
-};
+  {
+    id: 'review-3',
+    user: {
+      name: 'Jennifer L.',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80',
+    },
+    rating: 5,
+    date: 'November 5, 2023',
+    comment: 'Alex is an amazing instructor! The way he explains JavaScript concepts made things click that I've been struggling with for months. Highly recommend!',
+  },
+];
 
-const renderStars = (rating: number) => {
-  return Array(5)
-    .fill(0)
-    .map((_, i) => (
-      <Star
-        key={i}
-        className={cn(
-          'w-4 h-4',
-          i < Math.floor(rating) 
-            ? 'text-yellow-400 fill-yellow-400' 
-            : 'text-gray-300'
-        )}
-      />
-    ));
-};
-
-const CourseDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const [course, setCourse] = useState<CourseProps | null>(null);
-  const [courseDetails, setCourseDetails] = useState<CourseDetailProps | null>(null);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const { addToCart, isInCart } = useCart();
+export default function CourseDetail() {
+  const { id } = useParams();
   const { toast } = useToast();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    
-    const foundCourse = allCourses.find(c => c.id === id);
-    if (foundCourse) {
-      setCourse(foundCourse);
-      
-      const details = extendedCourseDetails[id || ''];
-      if (details) {
-        setCourseDetails(details);
-      }
-    }
-  }, [id]);
-
-  const handlePlayVideo = () => {
-    setIsVideoPlaying(true);
-  };
-
+  const { addToCart, isInCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { isAuthenticated } = useAuth();
+  
+  // In a real app, you would fetch the course by ID from an API
+  const course = courseDetails;
+  
   const handleAddToCart = () => {
-    if (course) {
-      addToCart(course);
+    if (isInCart(course.id)) {
       toast({
-        title: "Course added to cart",
-        description: `${course.title} has been added to your cart.`,
+        title: "Already in cart",
+        description: "This course is already in your cart."
+      });
+      return;
+    }
+    
+    addToCart({
+      id: course.id,
+      title: course.title,
+      price: course.discountPrice || course.price,
+      instructor: course.instructor.name,
+      image: course.image
+    });
+    
+    toast({
+      title: "Added to cart",
+      description: `${course.title} has been added to your cart.`
+    });
+  };
+  
+  const toggleWishlist = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to add courses to your wishlist.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const isWishlisted = isInWishlist(course.id);
+    
+    if (isWishlisted) {
+      removeFromWishlist(course.id);
+      toast({
+        title: "Removed from wishlist",
+        description: `${course.title} has been removed from your wishlist.`
+      });
+    } else {
+      addToWishlist({
+        id: course.id,
+        title: course.title,
+        price: course.discountPrice || course.price,
+        instructor: course.instructor.name,
+        image: course.image
+      });
+      toast({
+        title: "Added to wishlist",
+        description: `${course.title} has been added to your wishlist.`
       });
     }
   };
-
-  const handleEnrollNow = () => {
-    if (course && !isInCart(course.id)) {
-      addToCart(course);
-    }
-    window.location.href = '/checkout';
-  };
-
-  if (!course || !courseDetails) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
-        <p>Loading course details...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
       
       <main className="flex-grow pt-20">
-        <section className="bg-secondary py-10">
+        {/* Course Header */}
+        <div className="bg-muted/30 pt-10 pb-10">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row gap-8">
-              <div className="lg:w-7/12">
-                <div className="mb-4">
-                  <span className="text-sm text-primary font-medium">{course.category}</span>
-                </div>
-                <h1 className="text-2xl md:text-3xl font-bold mb-3">{course.title}</h1>
-                <p className="text-lg mb-4">{courseDetails.description}</p>
-                
-                <div className="flex flex-wrap items-center gap-4 mb-4">
-                  <div className="flex items-center">
-                    <div className="flex mr-1">
-                      {renderStars(course.rating)}
-                    </div>
-                    <span className="text-sm font-medium">{course.rating}</span>
-                    <span className="text-sm text-muted-foreground ml-1">({course.reviewCount} reviews)</span>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-1 text-muted-foreground" />
-                    <span className="text-sm">{course.duration}</span>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <Award className="w-4 h-4 mr-1 text-muted-foreground" />
-                    <span className="text-sm">{course.level}</span>
-                  </div>
-                </div>
-                
-                <p className="text-sm mb-4">
-                  Created by <span className="font-medium">{course.instructor}</span>
+            {/* Breadcrumbs */}
+            <div className="flex items-center text-sm mb-6">
+              <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+                Home
+              </Link>
+              <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground" />
+              <Link to="/catalog" className="text-muted-foreground hover:text-foreground transition-colors">
+                Courses
+              </Link>
+              <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground" />
+              <span className="text-foreground font-medium">
+                {course.title}
+              </span>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold mb-4">
+                  {course.title}
+                </h1>
+                <p className="text-muted-foreground mb-4">
+                  {course.description}
                 </p>
                 
-                <div className="flex flex-wrap gap-3">
-                  <Button onClick={handleEnrollNow}>Enroll Now</Button>
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center"
-                    onClick={handleAddToCart}
-                    disabled={isInCart(course.id)}
-                  >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    {isInCart(course.id) ? 'In Cart' : 'Add to Cart'}
-                  </Button>
-                  <Button variant="outline" className="flex items-center">
-                    <Heart className="w-4 h-4 mr-2" />
-                    Wishlist
-                  </Button>
-                  <Button variant="outline" className="flex items-center">
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
-                  </Button>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {course.tags.map(tag => (
+                    <Badge key={tag} variant="outline" className="bg-primary/10">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+                
+                <div className="flex items-center mb-6">
+                  <div className="flex mr-4">
+                    {[...Array(5)].map((_, i) => (
+                      <svg 
+                        key={i}
+                        className={`w-4 h-4 ${i < Math.floor(course.rating) ? 'text-yellow-400' : 'text-gray-300'}`} 
+                        fill="currentColor" 
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="text-sm font-medium">{course.rating}</span>
+                  <span className="text-sm text-muted-foreground ml-1">({course.reviewsCount} reviews)</span>
+                </div>
+                
+                <div className="flex items-center mb-4">
+                  <Avatar className="h-10 w-10 mr-3">
+                    <AvatarImage src={course.instructor.avatar} alt={course.instructor.name} />
+                    <AvatarFallback>{course.instructor.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">Instructor</p>
+                    <p className="text-muted-foreground text-sm">{course.instructor.name}</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="flex flex-col">
+                    <div className="flex items-center text-sm text-muted-foreground mb-1">
+                      <BookOpen className="h-4 w-4 mr-1" />
+                      <span>Level</span>
+                    </div>
+                    <span className="text-sm font-medium">{course.level}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center text-sm text-muted-foreground mb-1">
+                      <Clock className="h-4 w-4 mr-1" />
+                      <span>Duration</span>
+                    </div>
+                    <span className="text-sm font-medium">{course.duration}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center text-sm text-muted-foreground mb-1">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      <span>Updated</span>
+                    </div>
+                    <span className="text-sm font-medium">{course.lastUpdated}</span>
+                  </div>
                 </div>
               </div>
               
-              <div className="lg:w-5/12">
-                <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-                  {isVideoPlaying ? (
-                    <div className="w-full h-full">
-                      <div className="flex items-center justify-center h-full text-white">
-                        Video is playing...
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <img 
-                        src={course.image} 
-                        alt={course.title} 
-                        className="w-full h-full object-cover opacity-80"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30"
-                          onClick={handlePlayVideo}
-                        >
-                          <Play className="w-8 h-8 text-white" fill="white" />
-                        </Button>
-                      </div>
-                    </>
-                  )}
+              <div>
+                <div className="aspect-video w-full rounded-lg overflow-hidden mb-6">
+                  <img 
+                    src={course.image} 
+                    alt={course.title} 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="mb-4">
+                      {course.discountPrice ? (
+                        <div className="flex items-baseline">
+                          <span className="text-3xl font-bold">${course.discountPrice}</span>
+                          <span className="text-lg text-muted-foreground line-through ml-2">${course.price}</span>
+                          <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-100">
+                            {Math.round((1 - course.discountPrice / course.price) * 100)}% OFF
+                          </Badge>
+                        </div>
+                      ) : (
+                        <span className="text-3xl font-bold">${course.price}</span>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <Button 
+                        className="w-full" 
+                        size="lg"
+                        onClick={handleAddToCart}
+                        disabled={isInCart(course.id)}
+                      >
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        {isInCart(course.id) ? 'Added to Cart' : 'Add to Cart'}
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        className="w-full" 
+                        size="lg"
+                        onClick={toggleWishlist}
+                      >
+                        <Heart 
+                          className={`h-4 w-4 mr-2 ${isInWishlist(course.id) ? 'fill-current text-red-500' : ''}`} 
+                        />
+                        {isInWishlist(course.id) ? 'Wishlisted' : 'Add to Wishlist'}
+                      </Button>
+                    </div>
+                    
+                    <div className="mt-6 space-y-3">
+                      <div className="flex items-center">
+                        <CheckCircle className="h-5 w-5 text-primary mr-3" />
+                        <span className="text-sm">Full lifetime access</span>
+                      </div>
+                      <div className="flex items-center">
+                        <CheckCircle className="h-5 w-5 text-primary mr-3" />
+                        <span className="text-sm">Access on mobile and TV</span>
+                      </div>
+                      <div className="flex items-center">
+                        <CheckCircle className="h-5 w-5 text-primary mr-3" />
+                        <span className="text-sm">Certificate of completion</span>
+                      </div>
+                      {course.hasVideos && (
+                        <div className="flex items-center">
+                          <CheckCircle className="h-5 w-5 text-primary mr-3" />
+                          <span className="text-sm">Video lectures</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
-        </section>
+        </div>
         
-        <section className="py-10">
+        {/* Course Content */}
+        <div className="py-10">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row gap-8">
-              <div className="lg:w-8/12">
-                <Tabs defaultValue="overview" className="mb-8">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
-                    <TabsTrigger value="instructor">Instructor</TabsTrigger>
-                    <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="overview">
-                    <div className="space-y-6">
-                      <div>
-                        <h3 className="text-xl font-semibold mb-4">What you'll learn</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {courseDetails.whatYouWillLearn.map((item, index) => (
-                            <div key={index} className="flex">
-                              <CheckCircle className="w-5 h-5 text-primary mr-3 flex-shrink-0" />
-                              <span>{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-xl font-semibold mb-4">Requirements</h3>
-                        <ul className="list-disc pl-5 space-y-2">
-                          {courseDetails.requirements.map((req, index) => (
-                            <li key={index}>{req}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-xl font-semibold mb-4">Related Courses</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {allCourses
-                            .filter(c => c.id !== id && c.category === course.category)
-                            .slice(0, 2)
-                            .map(relatedCourse => (
-                              <CourseCard 
-                                key={relatedCourse.id} 
-                                {...relatedCourse} 
-                              />
-                            ))}
-                        </div>
-                      </div>
+            {/* Video Player (if course has videos) */}
+            {course.hasVideos && (
+              <CourseVideoPlayer courseId={course.id} />
+            )}
+            
+            <Tabs defaultValue="content" className="mb-8">
+              <TabsList className="mb-6">
+                <TabsTrigger value="content">Course Content</TabsTrigger>
+                <TabsTrigger value="description">Description</TabsTrigger>
+                <TabsTrigger value="instructor">Instructor</TabsTrigger>
+                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="content">
+                <CourseContent chapters={chapters} />
+              </TabsContent>
+              
+              <TabsContent value="description">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="prose max-w-none">
+                      <h3 className="text-xl font-semibold mb-4">About this course</h3>
+                      <p className="mb-4 whitespace-pre-line">{course.longDescription}</p>
                     </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="curriculum">
-                    <div>
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-semibold">Course Content</h3>
-                        <div className="text-sm text-muted-foreground">
-                          {courseDetails.totalLectures} lectures • {courseDetails.totalDuration}
-                        </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="instructor">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row gap-6">
+                      <div className="md:w-1/4">
+                        <Avatar className="h-24 w-24">
+                          <AvatarImage src={course.instructor.avatar} alt={course.instructor.name} />
+                          <AvatarFallback>{course.instructor.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
                       </div>
-                      
-                      <div className="space-y-4">
-                        {courseDetails.curriculum.map((section, index) => (
-                          <div key={index} className="border rounded-lg overflow-hidden">
-                            <div className="bg-secondary/50 p-4 font-medium">
-                              {section.section}
-                            </div>
-                            <div className="divide-y">
-                              {section.lectures.map((lecture, lectureIndex) => (
-                                <div key={lectureIndex} className="p-4 flex justify-between items-center">
-                                  <div className="flex items-center">
-                                    <Play className="w-4 h-4 mr-3 text-muted-foreground" />
-                                    <span>{lecture.title}</span>
-                                    {lecture.preview && (
-                                      <span className="ml-3 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                                        Preview
-                                      </span>
-                                    )}
-                                  </div>
-                                  <span className="text-sm text-muted-foreground">{lecture.duration}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="instructor">
-                    <div className="space-y-6">
-                      <div className="flex items-start gap-4">
-                        <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
-                          <span className="text-2xl font-bold">{course.instructor.charAt(0)}</span>
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold mb-1">{course.instructor}</h3>
-                          <p className="text-muted-foreground mb-3">Professional Web Developer & Instructor</p>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                            <div className="flex items-center">
-                              <Star className="w-4 h-4 mr-1 text-yellow-400 fill-yellow-400" />
-                              <span>4.7 Instructor Rating</span>
-                            </div>
-                            <div>
-                              <span>120,000+ Students</span>
-                            </div>
-                            <div>
-                              <span>15 Courses</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-medium mb-2">About the instructor</h4>
-                        <p className="text-muted-foreground">
-                          I'm Angela, I'm a developer with a passion for teaching. I'm the lead instructor at the London App Brewery, London's leading Programming Bootcamp. I've helped hundreds of thousands of students learn to code and change their lives by becoming a developer. I've been invited by companies such as Twitter, Facebook and Google to teach their employees.
+                      <div className="md:w-3/4">
+                        <h3 className="text-xl font-semibold mb-2">{course.instructor.name}</h3>
+                        <p className="text-muted-foreground mb-4">
+                          {course.instructor.bio}
                         </p>
                       </div>
                     </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="reviews">
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-4">
-                        <div className="text-center">
-                          <div className="text-5xl font-bold">{course.rating}</div>
-                          <div className="flex justify-center my-1">
-                            {renderStars(course.rating)}
-                          </div>
-                          <div className="text-sm text-muted-foreground">Course Rating</div>
-                        </div>
-                        
-                        <div className="flex-1">
-                          <div className="space-y-2">
-                            {[5, 4, 3, 2, 1].map(num => (
-                              <div key={num} className="flex items-center gap-2">
-                                <div className="w-12 text-sm text-right">{num} stars</div>
-                                <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                                  <div 
-                                    className="h-full bg-primary rounded-full" 
-                                    style={{ 
-                                      width: `${num === 5 ? 70 : num === 4 ? 20 : num === 3 ? 7 : num === 2 ? 2 : 1}%` 
-                                    }} 
-                                  />
-                                </div>
-                                <div className="w-12 text-sm">
-                                  {num === 5 ? '70%' : num === 4 ? '20%' : num === 3 ? '7%' : num === 2 ? '2%' : '1%'}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-xl font-semibold mb-4">Student Reviews</h3>
-                        <div className="space-y-6">
-                          {[1, 2, 3].map(i => (
-                            <div key={i} className="border-b pb-6">
-                              <div className="flex items-start gap-4">
-                                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                                  <span className="font-medium">S</span>
-                                </div>
-                                <div className="flex-1">
-                                  <div className="flex justify-between">
-                                    <h4 className="font-medium">Student {i}</h4>
-                                    <span className="text-sm text-muted-foreground">2 weeks ago</span>
-                                  </div>
-                                  <div className="flex my-1">
-                                    {renderStars(5)}
-                                  </div>
-                                  <p className="text-muted-foreground">
-                                    This course was exactly what I needed to jumpstart my career in web development. The instructor explains complex concepts in an easy-to-understand way, and the projects are both challenging and rewarding.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
               
-              <div className="lg:w-4/12">
-                <div className="sticky top-24">
-                  <div className="bg-white shadow-lg rounded-lg overflow-hidden animate-scale-in">
-                    <div className="p-6">
-                      <div className="flex justify-between items-center mb-6">
-                        <div className="text-3xl font-bold">${course.price.toFixed(2)}</div>
-                        <div className="text-sm text-muted-foreground line-through">
-                          ${(course.price * 1.7).toFixed(2)}
+              <TabsContent value="reviews">
+                <Card>
+                  <CardHeader>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center mb-2">
+                          <span className="text-4xl font-bold mr-3">{course.rating}</span>
+                          <div>
+                            <div className="flex mb-1">
+                              {[...Array(5)].map((_, i) => (
+                                <svg 
+                                  key={i}
+                                  className={`w-5 h-5 ${i < Math.floor(course.rating) ? 'text-yellow-400' : 'text-gray-300'}`} 
+                                  fill="currentColor" 
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                              ))}
+                            </div>
+                            <span className="text-sm text-muted-foreground">{course.reviewsCount} reviews</span>
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="space-y-4 mb-6">
-                        <Button className="w-full" onClick={handleEnrollNow}>Enroll Now</Button>
-                        <Button 
-                          variant="outline" 
-                          className="w-full"
-                          onClick={handleAddToCart}
-                          disabled={isInCart(course.id)}
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-2" />
-                          {isInCart(course.id) ? 'In Cart' : 'Add to Cart'}
-                        </Button>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <h4 className="font-medium">This course includes:</h4>
-                        
+                      <div className="w-full md:w-2/5">
                         <div className="space-y-2">
-                          <div className="flex items-start">
-                            <Globe className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
-                            <span>{courseDetails.totalDuration} on-demand video</span>
-                          </div>
-                          <div className="flex items-start">
-                            <CheckCircle className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
-                            <span>{courseDetails.totalLectures} lectures</span>
-                          </div>
-                          <div className="flex items-start">
-                            <Globe className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
-                            <span>Access on mobile and TV</span>
-                          </div>
-                          <div className="flex items-start">
-                            <Award className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
-                            <span>Certificate of completion</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-6 pt-6 border-t">
-                        <div className="text-center">
-                          <p className="text-sm mb-2">Not sure? All courses have a 30-day money-back guarantee</p>
+                          {[5, 4, 3, 2, 1].map((rating) => {
+                            const percentage = rating === 5 ? 65 : rating === 4 ? 25 : rating === 3 ? 7 : rating === 2 ? 2 : 1;
+                            return (
+                              <div key={rating} className="flex items-center">
+                                <div className="flex items-center w-12">
+                                  <span className="text-sm mr-1">{rating}</span>
+                                  <svg className="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                  </svg>
+                                </div>
+                                <div className="w-full ml-3">
+                                  <Progress value={percentage} className="h-2" />
+                                </div>
+                                <span className="text-sm text-muted-foreground ml-3 w-10">{percentage}%</span>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+                  </CardHeader>
+                  <Separator />
+                  <CardContent className="p-6">
+                    <div className="space-y-6">
+                      {reviews.map((review) => (
+                        <div key={review.id} className="pb-6 border-b last:border-0 last:pb-0">
+                          <div className="flex items-start">
+                            <Avatar className="h-10 w-10 mr-4">
+                              <AvatarImage src={review.user.avatar} alt={review.user.name} />
+                              <AvatarFallback>{review.user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+                                <div>
+                                  <h4 className="text-sm font-semibold">{review.user.name}</h4>
+                                  <div className="flex items-center">
+                                    <div className="flex">
+                                      {[...Array(5)].map((_, i) => (
+                                        <svg 
+                                          key={i}
+                                          className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'}`} 
+                                          fill="currentColor" 
+                                          viewBox="0 0 20 20"
+                                        >
+                                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className="text-xs text-muted-foreground mt-1 sm:mt-0">{review.date}</span>
+                              </div>
+                              <p className="text-sm">{review.comment}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-center p-6 pt-0">
+                    <Button variant="outline">See All Reviews</Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
-        </section>
+        </div>
       </main>
       
       <Footer />
     </div>
   );
-};
-
-export default CourseDetail;
+}

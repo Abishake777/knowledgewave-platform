@@ -1,5 +1,4 @@
-
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -10,9 +9,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/context/AuthContext';
-import { Users, BookOpen, BarChart3, Clock, Calendar } from 'lucide-react';
+import { Users, BookOpen, BarChart3, Clock, Calendar, FileVideo, Upload } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
-// Mock data for enrolled students
 const enrolledStudents = [
   {
     id: '1',
@@ -61,7 +64,6 @@ const enrolledStudents = [
   }
 ];
 
-// Mock data for tutor courses
 const tutorCourses = [
   {
     id: '1',
@@ -92,12 +94,66 @@ const tutorCourses = [
   }
 ];
 
+const courseLectures = [
+  {
+    id: 'video-1',
+    courseId: '1',
+    title: 'Introduction to Web Development',
+    description: 'Overview of the web development landscape and tools we will use.',
+    url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    uploadDate: '2023-12-01',
+    duration: '10:15'
+  },
+  {
+    id: 'video-2',
+    courseId: '1',
+    title: 'HTML Basics',
+    description: 'Learn the fundamentals of HTML markup and document structure.',
+    url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    uploadDate: '2023-12-05',
+    duration: '15:30'
+  },
+  {
+    id: 'video-3',
+    courseId: '2',
+    title: 'Machine Learning Fundamentals',
+    description: 'Introduction to key machine learning concepts and algorithms.',
+    url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    uploadDate: '2023-11-20',
+    duration: '20:45'
+  }
+];
+
+type VideoLecture = {
+  id: string;
+  courseId: string;
+  title: string;
+  description: string;
+  url: string;
+  thumbnailUrl: string;
+  uploadDate: string;
+  duration: string;
+};
+
 const TutorDashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [lectures, setLectures] = useState<VideoLecture[]>(courseLectures);
+  const [selectedCourseId, setSelectedCourseId] = useState<string>('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newVideo, setNewVideo] = useState({
+    title: '',
+    description: '',
+    file: null as File | null,
+    thumbnail: null as File | null,
+    duration: ''
+  });
 
   useEffect(() => {
-    // Redirect if not authenticated or not a tutor
     if (!isAuthenticated || !user?.role || user.role !== 'tutor') {
       navigate('/tutor/signin');
     }
@@ -109,6 +165,71 @@ const TutorDashboard = () => {
       .map((n) => n[0])
       .join('')
       .toUpperCase();
+  };
+
+  const handleVideoSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedCourseId || !newVideo.title || !newVideo.file) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const newLecture: VideoLecture = {
+      id: `video-${Date.now()}`,
+      courseId: selectedCourseId,
+      title: newVideo.title,
+      description: newVideo.description,
+      url: newVideo.file ? URL.createObjectURL(newVideo.file) : '',
+      thumbnailUrl: newVideo.thumbnail ? URL.createObjectURL(newVideo.thumbnail) : 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      uploadDate: new Date().toISOString().split('T')[0],
+      duration: newVideo.duration || '00:00'
+    };
+    
+    setLectures([...lectures, newLecture]);
+    
+    toast({
+      title: "Video uploaded",
+      description: "Your lecture has been successfully uploaded."
+    });
+    
+    setNewVideo({
+      title: '',
+      description: '',
+      file: null,
+      thumbnail: null,
+      duration: ''
+    });
+    
+    setIsDialogOpen(false);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'video' | 'thumbnail') => {
+    if (e.target.files && e.target.files[0]) {
+      if (type === 'video') {
+        setNewVideo({ ...newVideo, file: e.target.files[0] });
+        
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.onloadedmetadata = function() {
+          window.URL.revokeObjectURL(video.src);
+          const duration = Math.floor(video.duration);
+          const minutes = Math.floor(duration / 60);
+          const seconds = duration % 60;
+          setNewVideo(prev => ({ 
+            ...prev, 
+            duration: `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}` 
+          }));
+        };
+        video.src = URL.createObjectURL(e.target.files[0]);
+      } else {
+        setNewVideo({ ...newVideo, thumbnail: e.target.files[0] });
+      }
+    }
   };
 
   return (
@@ -172,6 +293,7 @@ const TutorDashboard = () => {
             <TabsList>
               <TabsTrigger value="students">Enrolled Students</TabsTrigger>
               <TabsTrigger value="courses">Your Courses</TabsTrigger>
+              <TabsTrigger value="videos">Course Videos</TabsTrigger>
             </TabsList>
             
             <TabsContent value="students">
@@ -279,6 +401,142 @@ const TutorDashboard = () => {
                         </CardContent>
                       </Card>
                     ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="videos">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Course Videos</CardTitle>
+                    <CardDescription>
+                      Manage video lectures for your courses
+                    </CardDescription>
+                  </div>
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload Video
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px]">
+                      <form onSubmit={handleVideoSubmit}>
+                        <DialogHeader>
+                          <DialogTitle>Upload New Video Lecture</DialogTitle>
+                          <DialogDescription>
+                            Add a new video lecture to one of your courses
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="course">Course</Label>
+                            <select 
+                              id="course"
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                              value={selectedCourseId}
+                              onChange={(e) => setSelectedCourseId(e.target.value)}
+                              required
+                            >
+                              <option value="">Select a course</option>
+                              {tutorCourses.map((course) => (
+                                <option key={course.id} value={course.id}>{course.title}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="title">Video Title</Label>
+                            <Input 
+                              id="title" 
+                              value={newVideo.title}
+                              onChange={(e) => setNewVideo({...newVideo, title: e.target.value})}
+                              required
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea 
+                              id="description" 
+                              value={newVideo.description}
+                              onChange={(e) => setNewVideo({...newVideo, description: e.target.value})}
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="video">Video File</Label>
+                            <Input 
+                              id="video" 
+                              type="file" 
+                              accept="video/*"
+                              onChange={(e) => handleFileChange(e, 'video')}
+                              required
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="thumbnail">Thumbnail (Optional)</Label>
+                            <Input 
+                              id="thumbnail" 
+                              type="file" 
+                              accept="image/*"
+                              onChange={(e) => handleFileChange(e, 'thumbnail')}
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button type="submit">Upload</Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  <div className="rounded-md border">
+                    <div className="grid grid-cols-[1fr_1fr_100px] p-4 font-medium">
+                      <div>Video</div>
+                      <div>Course</div>
+                      <div className="text-right">Actions</div>
+                    </div>
+                    <Separator />
+                    {lectures.map((lecture) => {
+                      const course = tutorCourses.find(c => c.id === lecture.courseId);
+                      return (
+                        <div key={lecture.id}>
+                          <div className="grid grid-cols-[1fr_1fr_100px] p-4 items-center">
+                            <div className="flex items-center gap-3">
+                              <div className="h-12 w-20 rounded overflow-hidden">
+                                <img 
+                                  src={lecture.thumbnailUrl} 
+                                  alt={lecture.title} 
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div>
+                                <div className="font-medium">{lecture.title}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {lecture.uploadDate} • {lecture.duration}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-sm">{course?.title.substring(0, 30)}{course?.title.length > 30 ? '...' : ''}</div>
+                            <div className="flex justify-end gap-2">
+                              <Button variant="ghost" size="sm">
+                                <FileVideo className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <Separator />
+                        </div>
+                      );
+                    })}
+                    {lectures.length === 0 && (
+                      <div className="p-4 text-center text-muted-foreground">
+                        No videos uploaded yet
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

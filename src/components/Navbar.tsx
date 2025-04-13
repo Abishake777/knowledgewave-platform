@@ -1,223 +1,212 @@
+
 import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Search, BookOpen, User, LogOut, ShoppingCart } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, ShoppingCart, User, LogOut, Bookmark, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { useMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useToast } from '@/components/ui/use-toast';
-import { Badge } from '@/components/ui/badge';
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
-  const { cartItems } = useCart();
-  const { toast } = useToast();
+  const isMobile = useMobile();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { user, isAuthenticated, logout, isTutor } = useAuth();
+  const { cart } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location]);
-
-  const handleLogout = () => {
-    logout();
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
-    navigate('/');
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
 
-  const navLinks = [
+  const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Courses', path: '/catalog' },
-    { name: 'Explore', path: '/explored' },
-    { name: 'Featured', path: '/featured' },
     { name: 'About', path: '/about' },
   ];
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase();
-  };
-
   return (
-    <header
-      className={cn(
-        'fixed top-0 left-0 w-full z-50 transition-all duration-300',
-        isScrolled
-          ? 'bg-white shadow-sm py-3'
-          : 'bg-transparent py-5'
-      )}
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 ${
+        isScrolled ? 'bg-background/80 backdrop-blur-md shadow-sm' : 'bg-transparent'
+      } transition-all duration-200`}
     >
-      <div className="container mx-auto px-4 flex items-center justify-between">
-        <Link 
-          to="/" 
-          className="text-2xl font-bold text-primary flex items-center"
-        >
-          <BookOpen className="mr-2 h-6 w-6" />
-          EduLearn
-        </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.path}
-              className={cn(
-                'relative text-base font-medium transition-colors hover:text-primary',
-                location.pathname === link.path ? 'text-primary' : 'text-foreground'
-              )}
-            >
-              {link.name}
-              {location.pathname === link.path && (
-                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary rounded-full" />
-              )}
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center">
+              <GraduationCap className="h-8 w-8 text-primary mr-2" />
+              <span className="text-xl font-bold">EduLearn</span>
             </Link>
-          ))}
-        </nav>
+          </div>
 
-        {/* Right Side - Search, Cart & Sign In/Profile */}
-        <div className="hidden md:flex items-center space-x-4">
-          <Button variant="ghost" size="icon" aria-label="Search">
-            <Search className="w-5 h-5" />
-          </Button>
-          
-          <Link to="/cart">
-            <Button variant="ghost" size="icon" className="relative" aria-label="Shopping Cart">
-              <ShoppingCart className="w-5 h-5" />
-              {cartItems.length > 0 && (
-                <Badge variant="destructive" className="absolute -top-2 -right-2 min-w-5 h-5 flex items-center justify-center rounded-full text-xs">
-                  {cartItems.length}
-                </Badge>
-              )}
-            </Button>
-          </Link>
-          
-          {isAuthenticated ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative rounded-full h-10 w-10 p-0">
-                  <Avatar>
-                    <AvatarImage src={user?.avatar} alt={user?.name} />
-                    <AvatarFallback>{user?.name ? getInitials(user.name) : 'U'}</AvatarFallback>
-                  </Avatar>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-1">
+            {navItems.map((item) => (
+              <Link key={item.path} to={item.path}>
+                <Button 
+                  variant="ghost" 
+                  className={`text-sm ${
+                    isActive(item.path) 
+                      ? 'bg-muted font-medium' 
+                      : 'hover:bg-muted/50'
+                  }`}
+                >
+                  {item.name}
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <div className="flex items-center justify-start gap-2 p-2">
-                  <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium">{user?.name}</p>
-                    <p className="text-sm text-muted-foreground">{user?.email}</p>
-                  </div>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="cursor-pointer w-full flex items-center">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Link to="/signin">
-              <Button>Sign In</Button>
-            </Link>
-          )}
-        </div>
-
-        {/* Mobile Menu Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-        >
-          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </Button>
-      </div>
-
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 top-[60px] bg-white z-40 md:hidden">
-          <nav className="container mx-auto px-4 py-8 flex flex-col space-y-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                className={cn(
-                  'text-lg font-medium py-2 transition-colors',
-                  location.pathname === link.path ? 'text-primary' : 'text-foreground'
-                )}
-              >
-                {link.name}
               </Link>
             ))}
-            <Link to="/cart" className="flex items-center py-2 space-x-2">
-              <ShoppingCart className="h-5 w-5" />
-              <span>Cart</span>
-              {cartItems.length > 0 && (
-                <Badge variant="destructive" className="ml-2 min-w-5 h-5 flex items-center justify-center rounded-full text-xs">
-                  {cartItems.length}
-                </Badge>
-              )}
-            </Link>
-            <div className="flex flex-col space-y-4 pt-4 border-t">
-              {isAuthenticated ? (
-                <>
-                  <Link to="/profile" className="flex items-center py-2">
-                    <User className="mr-2 h-5 w-5" />
-                    <span>Profile</span>
-                  </Link>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start" 
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-5 w-5" />
-                    Log out
-                  </Button>
-                </>
-              ) : (
-                <Link to="/signin">
-                  <Button size="lg" className="w-full">
-                    Sign In
+          </nav>
+
+          <div className="flex items-center space-x-2">
+            {isAuthenticated ? (
+              <>
+                <Link to="/wishlist">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Bookmark className="h-5 w-5" />
                   </Button>
                 </Link>
-              )}
-            </div>
-          </nav>
+                <Link to="/cart">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <ShoppingCart className="h-5 w-5" />
+                    {cart.length > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center">
+                        {cart.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.avatar} alt={user?.name} />
+                        <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {isTutor && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/tutor/dashboard" className="w-full cursor-pointer">
+                          <GraduationCap className="mr-2 h-4 w-4" />
+                          <span>Tutor Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="w-full cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/wishlist" className="w-full cursor-pointer">
+                        <Bookmark className="mr-2 h-4 w-4" />
+                        <span>Wishlist</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={logout}
+                      className="cursor-pointer text-destructive focus:text-destructive"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Link to="/cart">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <ShoppingCart className="h-5 w-5" />
+                    {cart.length > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center">
+                        {cart.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
+                {!isMobile && (
+                  <>
+                    <Link to="/signin">
+                      <Button variant="ghost" size="sm">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/signup">
+                      <Button size="sm">Sign Up</Button>
+                    </Link>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Mobile Menu */}
+            {isMobile && (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <div className="flex flex-col space-y-4 mt-8">
+                    {navItems.map((item) => (
+                      <Link key={item.path} to={item.path}>
+                        <Button 
+                          variant="ghost" 
+                          className={`w-full justify-start ${
+                            isActive(item.path) 
+                              ? 'bg-muted font-medium' 
+                              : ''
+                          }`}
+                        >
+                          {item.name}
+                        </Button>
+                      </Link>
+                    ))}
+                    {!isAuthenticated && (
+                      <>
+                        <Link to="/signin">
+                          <Button variant="outline" className="w-full">
+                            Sign In
+                          </Button>
+                        </Link>
+                        <Link to="/signup">
+                          <Button className="w-full">Sign Up</Button>
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </header>
   );
 };
