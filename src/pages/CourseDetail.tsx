@@ -1,4 +1,3 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { ChevronRight, CheckCircle, ShoppingCart, Heart, BookOpen, Clock, Calendar, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -85,7 +84,7 @@ const reviews = [
     },
     rating: 5,
     date: 'October 15, 2023',
-    comment: 'This course exceeded my expectations. The instructor explains complex concepts in a way that's easy to understand, and the projects really helped cement my knowledge.',
+    comment: "This course exceeded my expectations. The instructor explains complex concepts in a way that's easy to understand, and the projects really helped cement my knowledge.",
   },
   {
     id: 'review-2',
@@ -95,7 +94,7 @@ const reviews = [
     },
     rating: 4,
     date: 'September 28, 2023',
-    comment: 'Great course for intermediate developers looking to level up their JavaScript skills. The section on asynchronous programming was particularly helpful for my work projects.',
+    comment: "Great course for intermediate developers looking to level up their JavaScript skills. The section on asynchronous programming was particularly helpful for my work projects.",
   },
   {
     id: 'review-3',
@@ -105,7 +104,7 @@ const reviews = [
     },
     rating: 5,
     date: 'November 5, 2023',
-    comment: 'Alex is an amazing instructor! The way he explains JavaScript concepts made things click that I've been struggling with for months. Highly recommend!',
+    comment: "Alex is an amazing instructor! The way he explains JavaScript concepts made things click that I've been struggling with for months. Highly recommend!",
   },
 ];
 
