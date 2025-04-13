@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
 import CourseDetail from "./pages/CourseDetail";
 import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import ExploredCourses from "./pages/ExploredCourses";
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/course/:id" element={<CourseDetail />} />
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
           <Route path="/about" element={<About />} />
           <Route path="/explored" element={<ExploredCourses />} />
           <Route path="/featured" element={<FeaturedCourses />} />

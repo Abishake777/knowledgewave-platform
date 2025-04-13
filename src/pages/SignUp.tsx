@@ -4,10 +4,11 @@ import { Link } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -20,31 +21,37 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+  terms: z.boolean().refine(val => val === true, {
+    message: "You must agree to the terms and conditions",
+  }),
 });
 
-const SignIn = () => {
+const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
+      terms: false,
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     
-    // Simulate authentication delay
+    // Simulate registration delay
     setTimeout(() => {
       setIsLoading(false);
       toast({
-        title: "Sign in successful",
-        description: "Welcome back to EduLearn!",
+        title: "Account created successfully",
+        description: "Welcome to EduLearn!",
       });
     }, 1500);
   }
@@ -58,7 +65,7 @@ const SignIn = () => {
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto items-center">
             <div className="hidden md:block">
               <img 
-                src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
                 alt="Learning platform" 
                 className="rounded-lg shadow-lg object-cover h-[500px] w-full"
               />
@@ -66,12 +73,33 @@ const SignIn = () => {
             
             <div className="bg-white p-8 rounded-lg shadow-sm">
               <div className="mb-6 text-center">
-                <h1 className="text-2xl font-bold mb-2">Welcome back</h1>
-                <p className="text-muted-foreground">Sign in to your account to continue learning</p>
+                <h1 className="text-2xl font-bold mb-2">Join EduLearn</h1>
+                <p className="text-muted-foreground">Create an account to start learning</p>
               </div>
               
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              placeholder="Enter your full name" 
+                              className="pl-10"
+                              {...field} 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
                   <FormField
                     control={form.control}
                     name="email"
@@ -104,7 +132,7 @@ const SignIn = () => {
                             <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input 
                               type="password" 
-                              placeholder="Enter your password" 
+                              placeholder="Create a password" 
                               className="pl-10"
                               {...field} 
                             />
@@ -115,13 +143,26 @@ const SignIn = () => {
                     )}
                   />
                   
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm">
-                      <Link to="#" className="text-primary hover:underline">
-                        Forgot password?
-                      </Link>
-                    </div>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="terms"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm font-normal">
+                            I agree to the <a href="#" className="text-primary hover:underline">Terms of Service</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a>
+                          </FormLabel>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                   
                   <Button 
                     type="submit" 
@@ -129,14 +170,14 @@ const SignIn = () => {
                     size="lg"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Signing in..." : "Sign In"}
+                    {isLoading ? "Creating account..." : "Create Account"}
                   </Button>
                   
                   <div className="text-center mt-4">
                     <p className="text-sm text-muted-foreground">
-                      Don't have an account?{" "}
-                      <Link to="/signup" className="text-primary hover:underline">
-                        Sign up
+                      Already have an account?{" "}
+                      <Link to="/signin" className="text-primary hover:underline">
+                        Sign in
                       </Link>
                     </p>
                   </div>
@@ -152,4 +193,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default SignUp;
