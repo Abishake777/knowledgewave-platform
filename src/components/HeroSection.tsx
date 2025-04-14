@@ -1,12 +1,8 @@
 
-import { useState } from 'react';
-import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import CourseSearch from './CourseSearch';
 
 const HeroSection = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-
   return (
     <section className="relative pt-28 pb-20">
       <div className="container mx-auto px-4">
@@ -20,24 +16,7 @@ const HeroSection = () => {
               Access quality courses taught by expert instructors to expand your knowledge and advance your career.
             </p>
 
-            <div className="relative max-w-md">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <Search className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <Input
-                type="text"
-                placeholder="What do you want to learn today?"
-                className="pl-10 py-6 text-base"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <Button 
-                className="absolute right-1 top-1 bottom-1"
-                size="sm"
-              >
-                Search
-              </Button>
-            </div>
+            <CourseSearch />
 
             <div className="flex flex-wrap gap-2 pt-2">
               <span className="text-sm font-medium text-muted-foreground">

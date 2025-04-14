@@ -19,7 +19,7 @@ interface Chapter {
   lessons: Lecture[];
 }
 
-interface CourseContentProps {
+export interface CourseContentProps {
   chapters: Chapter[];
   totalLectures?: number;
   totalDuration?: string;

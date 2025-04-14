@@ -23,6 +23,7 @@ import TutorSignIn from "./pages/TutorSignIn";
 import TutorDashboard from "./pages/TutorDashboard";
 import Wishlist from "./pages/Wishlist";
 import TeacherProfile from "./pages/TeacherProfile";
+import EnrolledCourses from "./pages/EnrolledCourses";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
                 <Route path="/tutor/dashboard" element={<TutorDashboard />} />
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/teacher/:id" element={<TeacherProfile />} />
+                <Route path="/enrolled-courses" element={<EnrolledCourses />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +29,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import { BookOpen } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -61,7 +61,6 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Redirect if not logged in
   if (!user) {
     navigate("/signin");
     return null;
@@ -87,9 +86,7 @@ const Profile = () => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     
-    // Simulate API call
     setTimeout(() => {
-      // Update user data
       login({
         ...user!,
         name: values.name,
@@ -107,7 +104,6 @@ const Profile = () => {
   function onPasswordSubmit(values: z.infer<typeof passwordSchema>) {
     setIsSubmitting(true);
     
-    // Simulate API call
     setTimeout(() => {
       setIsSubmitting(false);
       toast({
@@ -140,25 +136,28 @@ const Profile = () => {
             <h1 className="text-3xl font-bold mb-6">Your Profile</h1>
             
             <div className="grid md:grid-cols-[240px_1fr] gap-8">
-              {/* Sidebar */}
               <div className="space-y-6">
                 <Card>
                   <CardContent className="p-6 flex flex-col items-center">
                     <Avatar className="h-24 w-24 mb-4">
                       <AvatarImage src={user.avatar} />
-                      <AvatarFallback className="text-lg">{getInitials(user.name)}</AvatarFallback>
+                      <AvatarFallback className="text-lg">{user.name ? user.name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
                     </Avatar>
                     <h2 className="text-xl font-semibold">{user.name}</h2>
                     <p className="text-sm text-muted-foreground">{user.email}</p>
                   </CardContent>
                 </Card>
                 
-                <Button variant="outline" className="w-full" onClick={() => navigate("/")}>
+                <Button 
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={() => navigate("/enrolled-courses")}
+                >
+                  <BookOpen className="mr-2 h-4 w-4" />
                   View Enrolled Courses
                 </Button>
               </div>
               
-              {/* Main Content */}
               <div>
                 <Tabs defaultValue="account">
                   <TabsList className="mb-6">
