@@ -5,11 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { useLanguage } from '@/context/LanguageContext';
 
 const CourseSearch = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +36,7 @@ const CourseSearch = () => {
       </div>
       <Input
         type="text"
-        placeholder="What do you want to learn today?"
+        placeholder={t('hero.search.placeholder')}
         className="pl-10 py-6 text-base"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
@@ -44,7 +46,7 @@ const CourseSearch = () => {
         className="absolute right-1 top-1 bottom-1"
         size="sm"
       >
-        Search
+        {t('hero.search.button')}
       </Button>
     </form>
   );

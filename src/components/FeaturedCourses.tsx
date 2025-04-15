@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import CourseCard, { CourseProps } from './CourseCard';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/context/LanguageContext';
 
 // Sample data for featured courses
 const featuredCourses: CourseProps[] = [
@@ -60,16 +61,18 @@ const featuredCourses: CourseProps[] = [
 ];
 
 const FeaturedCourses = () => {
+  const { t } = useLanguage();
+  
   return (
     <section className="py-16 bg-secondary">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between mb-10">
           <div className="mb-6 md:mb-0">
-            <h2 className="text-2xl font-bold">Featured Courses</h2>
+            <h2 className="text-2xl font-bold">{t('featured.title')}</h2>
           </div>
           <Link to="/catalog">
             <Button variant="outline">
-              Browse all courses
+              {t('featured.browseAll')}
             </Button>
           </Link>
         </div>

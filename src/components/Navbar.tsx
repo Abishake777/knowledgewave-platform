@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 // Import the smaller components
 import NavbarLogo from './navbar/NavbarLogo';
@@ -12,12 +13,14 @@ import WishlistButton from './navbar/WishlistButton';
 import UserMenu from './navbar/UserMenu';
 import MobileMenu from './navbar/MobileMenu';
 import AuthButtons from './navbar/AuthButtons';
+import LanguageSelector from './navbar/LanguageSelector';
 
 const Navbar = () => {
   const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, isAuthenticated, logout, isTutor } = useAuth();
   const { cartItems } = useCart();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,9 +38,9 @@ const Navbar = () => {
   }, []);
 
   const navItems = [
-    { name: 'Home', path: '/' },
-    { name: 'Courses', path: '/catalog' },
-    { name: 'About', path: '/about' },
+    { name: t('nav.home'), path: '/' },
+    { name: t('nav.courses'), path: '/catalog' },
+    { name: t('nav.about'), path: '/about' },
   ];
 
   return (
@@ -58,6 +61,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-2">
             {isAuthenticated ? (
               <>
+                <LanguageSelector />
                 <WishlistButton />
                 <CartButton itemCount={cartItems.length} />
                 <UserMenu 
@@ -68,6 +72,7 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                <LanguageSelector />
                 <CartButton itemCount={cartItems.length} />
                 {!isMobile && <AuthButtons />}
               </>

@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Star, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/context/LanguageContext';
 
 export interface CourseProps {
   id: string;
@@ -30,6 +31,8 @@ const CourseCard = ({
   category,
   featured = false,
 }: CourseProps) => {
+  const { t } = useLanguage();
+  
   const renderStars = (rating: number) => {
     return Array(5)
       .fill(0)
@@ -60,7 +63,7 @@ const CourseCard = ({
         {featured && (
           <div className="absolute top-3 left-3">
             <span className="bg-primary text-white text-xs font-semibold px-2 py-1 rounded-full">
-              Featured
+              {t('course.featured')}
             </span>
           </div>
         )}
@@ -71,7 +74,7 @@ const CourseCard = ({
         <h3 className="font-semibold text-lg mb-1 line-clamp-2">
           {title}
         </h3>
-        <p className="text-sm text-muted-foreground mb-2">by {instructor}</p>
+        <p className="text-sm text-muted-foreground mb-2">{t('course.by')} {instructor}</p>
         
         <div className="flex items-center mt-auto space-x-1 mb-2">
           {renderStars(rating)}

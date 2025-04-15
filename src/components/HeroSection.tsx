@@ -1,26 +1,29 @@
 
 import { Button } from '@/components/ui/button';
 import CourseSearch from './CourseSearch';
+import { useLanguage } from '@/context/LanguageContext';
 
 const HeroSection = () => {
+  const { t } = useLanguage();
+  
   return (
     <section className="relative pt-28 pb-20">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           <div className="lg:w-1/2 space-y-6">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-              Learn new skills online with <span className="text-primary">EduLearn</span>
+              {t('hero.title')} <span className="text-primary">EduLearn</span>
             </h1>
 
             <p className="text-xl text-muted-foreground max-w-lg">
-              Access quality courses taught by expert instructors to expand your knowledge and advance your career.
+              {t('hero.subtitle')}
             </p>
 
             <CourseSearch />
 
             <div className="flex flex-wrap gap-2 pt-2">
               <span className="text-sm font-medium text-muted-foreground">
-                Popular:
+                {t('hero.popular')}
               </span>
               {['Web Development', 'Data Science', 'Design', 'Business'].map((topic) => (
                 <Button 
@@ -41,9 +44,9 @@ const HeroSection = () => {
                 alt="Student learning online"
                 className="w-full h-auto object-cover aspect-video rounded-lg mb-6"
               />
-              <h3 className="text-xl font-semibold mb-2">Start your learning journey today</h3>
-              <p className="text-muted-foreground mb-4">Join thousands of students already learning on our platform</p>
-              <Button className="w-full">Explore Courses</Button>
+              <h3 className="text-xl font-semibold mb-2">{t('hero.cta')}</h3>
+              <p className="text-muted-foreground mb-4">{t('hero.ctaSubtitle')}</p>
+              <Button className="w-full">{t('hero.exploreCourses')}</Button>
             </div>
           </div>
         </div>
