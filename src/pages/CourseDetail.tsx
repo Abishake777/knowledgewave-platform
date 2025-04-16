@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ChevronRight, CheckCircle, ShoppingCart, Heart, BookOpen, Clock, Calendar, Video } from 'lucide-react';
+import { ChevronRight, CheckCircle, ShoppingCart, Heart, BookOpen, Clock, Calendar, Video, PlayCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -148,6 +148,7 @@ export default function CourseDetail() {
   const { isAuthenticated } = useAuth();
   
   const course = courseDetails;
+  const courseVideos = courseLectures.filter(video => video.courseId === course.id);
   
   const handleAddToCart = () => {
     if (isInCart(course.id)) {
