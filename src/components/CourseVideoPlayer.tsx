@@ -3,18 +3,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileVideo, Clock } from 'lucide-react';
-
-// Mock video lecture type
-type VideoLecture = {
-  id: string;
-  courseId: string;
-  title: string;
-  description: string;
-  url: string;
-  thumbnailUrl: string;
-  uploadDate: string;
-  duration: string;
-};
+import { VideoLecture } from '@/types/VideoLectureType';
 
 interface CourseVideoPlayerProps {
   courseId: string;

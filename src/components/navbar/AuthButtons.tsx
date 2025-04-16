@@ -7,16 +7,18 @@ const AuthButtons = () => {
   const { t } = useLanguage();
   
   return (
-    <>
+    <div className="flex gap-2">
       <Link to="/signin">
         <Button variant="ghost" size="sm">
           {t('nav.signin')}
         </Button>
       </Link>
       <Link to="/signup">
-        <Button size="sm">{t('nav.signup')}</Button>
+        <Button size="sm" className="bg-primary hover:bg-primary/90">
+          {t('nav.signup')}
+        </Button>
       </Link>
-    </>
+    </div>
   );
 };
 

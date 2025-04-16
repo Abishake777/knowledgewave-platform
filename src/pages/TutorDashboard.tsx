@@ -9,12 +9,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/context/AuthContext';
-import { Users, BookOpen, BarChart3, Clock, Calendar, FileVideo, Upload } from 'lucide-react';
+import { Users, BookOpen, BarChart3, Clock, Calendar, FileVideo, Upload, PlayCircle, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { VideoLecture } from '@/types/VideoLectureType';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const enrolledStudents = [
   {
@@ -145,6 +147,8 @@ const TutorDashboard = () => {
   const [lectures, setLectures] = useState<VideoLecture[]>(courseLectures);
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isVideoPlayDialogOpen, setIsVideoPlayDialogOpen] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<VideoLecture | null>(null);
   const [newVideo, setNewVideo] = useState({
     title: '',
     description: '',
@@ -232,6 +236,19 @@ const TutorDashboard = () => {
     }
   };
 
+  const handleDeleteVideo = (videoId: string) => {
+    setLectures(lectures.filter(lecture => lecture.id !== videoId));
+    toast({
+      title: "Video deleted",
+      description: "The lecture has been successfully deleted."
+    });
+  };
+
+  const handlePlayVideo = (video: VideoLecture) => {
+    setSelectedVideo(video);
+    setIsVideoPlayDialogOpen(true);
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -289,7 +306,7 @@ const TutorDashboard = () => {
             </Card>
           </div>
           
-          <Tabs defaultValue="students" className="space-y-6">
+          <Tabs defaultValue="videos" className="space-y-6">
             <TabsList>
               <TabsTrigger value="students">Enrolled Students</TabsTrigger>
               <TabsTrigger value="courses">Your Courses</TabsTrigger>
@@ -495,7 +512,7 @@ const TutorDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="rounded-md border">
-                    <div className="grid grid-cols-[1fr_1fr_100px] p-4 font-medium">
+                    <div className="grid grid-cols-[1fr_1fr_150px] p-4 font-medium">
                       <div>Video</div>
                       <div>Course</div>
                       <div className="text-right">Actions</div>
@@ -505,7 +522,7 @@ const TutorDashboard = () => {
                       const course = tutorCourses.find(c => c.id === lecture.courseId);
                       return (
                         <div key={lecture.id}>
-                          <div className="grid grid-cols-[1fr_1fr_100px] p-4 items-center">
+                          <div className="grid grid-cols-[1fr_1fr_150px] p-4 items-center">
                             <div className="flex items-center gap-3">
                               <div className="h-12 w-20 rounded overflow-hidden">
                                 <img 
@@ -523,9 +540,34 @@ const TutorDashboard = () => {
                             </div>
                             <div className="text-sm">{course?.title.substring(0, 30)}{course?.title.length > 30 ? '...' : ''}</div>
                             <div className="flex justify-end gap-2">
-                              <Button variant="ghost" size="sm">
-                                <FileVideo className="h-4 w-4" />
+                              <Button variant="ghost" size="sm" onClick={() => handlePlayVideo(lecture)} title="Preview Video">
+                                <PlayCircle className="h-4 w-4" />
                               </Button>
+                              <Button variant="ghost" size="sm" title="Edit Video">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="sm" title="Delete Video">
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This action cannot be undone. This will permanently delete the
+                                      video lecture and remove it from your courses.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteVideo(lecture.id)} className="bg-destructive text-destructive-foreground">
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           </div>
                           <Separator />
@@ -542,6 +584,28 @@ const TutorDashboard = () => {
               </Card>
             </TabsContent>
           </Tabs>
+          
+          <Dialog open={isVideoPlayDialogOpen} onOpenChange={setIsVideoPlayDialogOpen}>
+            <DialogContent className="sm:max-w-[800px]">
+              <DialogHeader>
+                <DialogTitle>{selectedVideo?.title}</DialogTitle>
+                <DialogDescription>
+                  {selectedVideo?.description}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="aspect-video w-full bg-black rounded-md overflow-hidden">
+                {selectedVideo && (
+                  <video 
+                    src={selectedVideo.url} 
+                    controls 
+                    autoPlay
+                    poster={selectedVideo.thumbnailUrl}
+                    className="w-full h-full"
+                  />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </main>
       

@@ -16,6 +16,7 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
 import { CourseProps } from '@/components/CourseCard';
+import { VideoLecture } from '@/types/VideoLectureType';
 
 const courseDetails = {
   id: '4',
@@ -103,6 +104,39 @@ const reviews = [
     rating: 5,
     date: 'November 5, 2023',
     comment: "Alex is an amazing instructor! The way he explains JavaScript concepts made things click that I've been struggling with for months. Highly recommend!",
+  },
+];
+
+const courseLectures: VideoLecture[] = [
+  {
+    id: 'video-1',
+    courseId: '4',
+    title: 'JavaScript Foundations: Variables and Data Types',
+    description: 'Learn about JavaScript variables, primitive data types, and type coercion.',
+    url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    uploadDate: '2023-11-15',
+    duration: '12:30'
+  },
+  {
+    id: 'video-2',
+    courseId: '4',
+    title: 'Working with Functions in JavaScript',
+    description: 'Explore function declarations, expressions, arrow functions, and scope.',
+    url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    uploadDate: '2023-11-20',
+    duration: '15:45'
+  },
+  {
+    id: 'video-3',
+    courseId: '4',
+    title: 'Modern JavaScript: Promises and Async/Await',
+    description: 'Dive into asynchronous JavaScript with Promises and async/await syntax.',
+    url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    uploadDate: '2023-11-25',
+    duration: '18:20'
   },
 ];
 
@@ -356,9 +390,39 @@ export default function CourseDetail() {
         
         <div className="py-10">
           <div className="container mx-auto px-4">
-            {course.hasVideos && (
-              <CourseVideoPlayer courseId={course.id} />
+            {course.hasVideos && courseVideos.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold mb-4">Course Video Lectures</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {courseVideos.map((video) => (
+                    <Card key={video.id} className="overflow-hidden">
+                      <div className="aspect-video w-full relative group cursor-pointer">
+                        <img 
+                          src={video.thumbnailUrl}
+                          alt={video.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                          <PlayCircle className="h-16 w-16 text-white" />
+                        </div>
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold">{video.title}</h3>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{video.duration}</span>
+                          <span>•</span>
+                          <span>{video.uploadDate}</span>
+                        </div>
+                        <p className="text-sm mt-2 line-clamp-2">{video.description}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             )}
+            
+            <CourseVideoPlayer courseId={course.id} />
             
             <Tabs defaultValue="content" className="mb-8">
               <TabsList className="mb-6">
